@@ -256,6 +256,8 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Held keys do not repeat | A desk calculator key types once per press | Auto-repeat from the operating system |
 | Key sound starts on, with a visible switch to turn it off | Reviewers notice it. Trade-off: the usual best practice is sound off by default, and a reviewer in a quiet room may be surprised | Sound off by default |
 | Sounds are loaded and decoded with the Web Audio API when the browser is idle after the first paint; playback starts on the first user action | The first key press sounds and nothing blocks the first paint | Loading on the first press, which would make it silent |
+| Decoding uses an `OfflineAudioContext`; the playing `AudioContext` is created inside the first key press | Browsers only allow audio after a user gesture, so this avoids autoplay warnings while keeping the first press audible | Creating the `AudioContext` at load, which starts suspended and logs a warning |
+| A sound file that fails to load only silences its key | Sound is optional; it must never break the calculator | Failing loudly |
 
 ### Tooling and process
 
@@ -298,5 +300,5 @@ git config core.hooksPath .githooks
 ## Credits and licenses
 
 - DSEG7 font by Keshikan, SIL Open Font License 1.1 (`design/fonts/DSEG-LICENSE.txt`).
-- Key sounds: the "Blue Alps" set from kbsim by Thomas Lai, MIT license (`design/sounds/LICENSE-kbsim.md`).
+- Key sounds: the "Blue Alps" set from kbsim by Thomas Lai, MIT license (`frontend/src/assets/sounds/LICENSE-kbsim.md`).
 - Bricolage Grotesque and Courier Prime, SIL Open Font License 1.1, Latin subsets from Fontsource (`frontend/src/assets/fonts/`, with their licenses).
