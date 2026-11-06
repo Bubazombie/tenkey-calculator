@@ -1,10 +1,11 @@
-// Review tool, not a test: compares the app's "reference" fixture with
-// design/reference.html. It reports the position and size difference of the
-// main parts and of every key, and writes screenshots and a pixel diff.
+// Review tool, not a test: brings the real app to the state drawn in
+// design/reference.html and compares the two. It reports the position and size
+// difference of the main parts and of every key, and writes screenshots and a
+// pixel diff. The API is answered here, so the Go server is not needed.
 //
-// Usage (with the dev server running):
+// Usage (with the frontend dev server running):
 //   node scripts/compare-reference.mjs [appUrl] [outputDir]
-// Defaults: http://localhost:5173/?fixture=reference and <temp>/tenkey-compare.
+// Defaults: http://localhost:5173/ and <temp>/tenkey-compare.
 // The reference page loads two fonts from Google Fonts, so it needs a network.
 
 import { mkdirSync, writeFileSync } from "node:fs";
@@ -13,7 +14,51 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 
-const appUrl = process.argv[2] ?? "http://localhost:5173/?fixture=reference";
+const appUrl = process.argv[2] ?? "http://localhost:5173/";
+
+// The calculations on the reference tape, with the API's answers.
+const answers = {
+  "add 0.1 0.2": { status: 200, body: { result: "0.3" } },
+  "divide 8 0": {
+    status: 422,
+    body: {
+      type: "about:blank",
+      title: "Unprocessable Entity",
+      status: 422,
+      code: "division_by_zero",
+      detail: "division by zero is undefined",
+    },
+  },
+  "sqrt 144": { status: 200, body: { result: "12" } },
+  "power 2 10": { status: 200, body: { result: "1024" } },
+};
+const typed = ["0.1+0.2=", "8/0=", "144R", "2^10="];
+
+/** Types the reference calculations, then holds the 5 key down. */
+async function reachReferenceState(page) {
+  await page.route("**/api/v1/calculations", (route) => {
+    const { operation, operands } = route.request().postDataJSON();
+    const answer = answers[[operation, ...operands].join(" ")];
+    return route.fulfill({ status: answer.status, json: answer.body });
+  });
+  const machine = page.getByRole("group", {
+    name: "Tenkey printing calculator",
+  });
+  await machine.focus();
+  for (const keys of typed) {
+    await page.keyboard.press("Escape");
+    for (const key of keys)
+      await page.keyboard.press(key === "=" ? "Enter" : key);
+    await page.waitForResponse("**/api/v1/calculations");
+  }
+  // Leave keyboard focus, then press 5 with the mouse: the key goes down and
+  // the machine gets focus without a keyboard focus ring, as in the reference.
+  await page.mouse.click(1, 1);
+  const box = await page.locator('[data-key="digit5"]').boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(200);
+}
 const outputDir = process.argv[3] ?? join(tmpdir(), "tenkey-compare");
 const referenceUrl = pathToFileURL(resolve("design/reference.html")).href;
 
@@ -170,6 +215,7 @@ try {
     await app.goto(appUrl, { waitUntil: "networkidle" });
     for (const page of [reference, app])
       await page.evaluate(() => document.fonts.ready);
+    await reachReferenceState(app);
 
     const ref = await measure(reference, 0);
     const ours = await measure(app, 1);
