@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Go ${{ matrix.go }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The two supported Go releases; go.mod asks for 1.26.
+        go: ["1.26.x", "1.27.x"]
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ matrix.go }}
+          cache-dependency-path: backend/go.sum
+      - name: Lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.15.0
+          working-directory: backend
+      - name: Test with the race detector
+        run: go test -race ./...
+      - name: Fuzz
+        if: matrix.go == '1.27.x'
+        run: |
+          go test ./internal/calc -run '^$' -fuzz '^FuzzParseNumber$' -fuzztime 30s
+          go test ./internal/calc -run '^$' -fuzz '^FuzzCalculate$' -fuzztime 30s
+
+  frontend:
+    name: Frontend, coverage and hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: 1.27.x
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx --workspace frontend playwright install --with-deps chromium
+      - run: npm run typecheck:frontend
+      - run: npm run lint:frontend
+      - run: npm run test:hooks
+      # Both test suites with coverage; fails below the minimums.
+      - run: npm run coverage
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: coverage
+          path: |
+            backend/coverage/
+            frontend/coverage/
+
+  e2e:
+    name: End to end
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version: 1.27.x
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx --workspace e2e playwright install --with-deps chromium
+      - run: npm run typecheck --workspace e2e
+      - run: npm run test:e2e
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          push: false
+          tags: tenkey:ci
+      - name: Run the image and calculate through it
+        run: |
+          docker run -d --rm --name tenkey -p 8080:8080 tenkey:ci
+          for attempt in 1 2 3 4 5; do curl -sf http://localhost:8080/ > /dev/null && break; sleep 1; done
+          curl -sf http://localhost:8080/ | grep -q "<title>Tenkey</title>"
+          result=$(curl -sf -X POST http://localhost:8080/api/v1/calculations \
+            -H "Content-Type: application/json" \
+            -d '{"operation":"add","operands":["0.1","0.2"]}')
+          test "$result" = '{"result":"0.3"}'
+          docker stop tenkey

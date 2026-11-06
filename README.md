@@ -232,6 +232,8 @@ Each entry gives the decision, why, and the main alternative not picked.
 | A panic is answered with a generic 500 problem body, and the cause is logged | Every failure has the same shape and nothing internal reaches the client | Go's default, which drops the connection |
 | The HTTP layer depends on a `CalculateFunc` type it defines, not on the calc package's function directly | Interfaces belong where they are used; tests inject failing and panicking calculators | Calling `calc.Calculate` directly, which makes the 500 path untestable |
 | The server sets read, write and idle timeouts and shuts down gracefully on interrupt or SIGTERM | Slow clients cannot hold connections forever, and Docker stops cleanly | Go's zero timeouts |
+| `go.mod` asks for Go 1.26, and CI tests 1.26 and 1.27 | The oldest Go release still supported; an older Go downloads the right toolchain by itself | The newest release only, or the lowest version that compiles (unsupported, unpatched releases) |
+| CI on every push and pull request: Go lint, tests with the race detector and 30 s of fuzzing per target; frontend typecheck, lint, hook tests and coverage with minimums; end-to-end tests; and a Docker build that calculates through the running image | Everything the local check runs, plus what needs Linux (race detector, fuzzing) | Running only unit tests in CI |
 | The Go module is named `tenkey` | It is an application, not a library, so no one imports it by URL | A `github.com/...` path, possible once the repository exists |
 
 ### Calculator behavior
