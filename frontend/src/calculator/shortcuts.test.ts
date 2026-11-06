@@ -1,6 +1,11 @@
 import { expect, test } from "vitest";
 import { keys, type KeyDefinition } from "./keys";
-import { ariaKeyShortcuts, shortcutHelp } from "./shortcuts";
+import {
+  ariaKeyShortcuts,
+  isSystemShortcut,
+  keyForShortcut,
+  shortcutHelp,
+} from "./shortcuts";
 
 const keyById = (id: string): KeyDefinition => {
   const key = (keys as readonly KeyDefinition[]).find((k) => k.id === id);
@@ -34,6 +39,46 @@ test("help text describes every shortcut in the key table", () => {
       "Decimal point: period or comma. Equals: Enter or equals sign.",
   );
 });
+
+test.each([
+  ["7", "digit7"],
+  [",", "decimal"],
+  ["*", "multiply"],
+  ["Enter", "equals"],
+  ["=", "equals"],
+  ["y", "power"],
+  ["Y", "power"],
+  ["r", "squareRoot"],
+  ["@", "squareRoot"],
+  ["Escape", "clear"],
+  ["Delete", "clear"],
+  ["a", undefined],
+  ["Tab", undefined],
+  [" ", undefined],
+])("the %j key presses %s", (eventKey, expected) => {
+  expect(keyForShortcut(eventKey)).toBe(expected);
+});
+
+const modifiers = (pressed: string[], altGraph = false) => ({
+  ctrlKey: pressed.includes("Control"),
+  metaKey: pressed.includes("Meta"),
+  altKey: pressed.includes("Alt"),
+  getModifierState: (key: string) => key === "AltGraph" && altGraph,
+});
+
+test.each([
+  [[], false, false],
+  [["Shift"], false, false],
+  [["Control"], false, true],
+  [["Meta"], false, true],
+  [["Alt"], false, true],
+  [["Control", "Alt"], true, false],
+])(
+  "modifiers %j with AltGr %s: system shortcut is %s",
+  (pressed, altGraph, expected) => {
+    expect(isSystemShortcut(modifiers(pressed, altGraph))).toBe(expected);
+  },
+);
 
 test("a new key appears in the help text without other changes", () => {
   const extra: KeyDefinition = {

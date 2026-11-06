@@ -251,6 +251,9 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Negative numbers show at most 9 digits | DSEG7's minus sign is as wide as a digit (816 units) and the decimal point has zero width, measured in the font file | An eleventh display cell |
 | Static shadow shapes; key travel moves an inner element with `transform` only | No repaint of a filtered layer, and the hit area stays still | The design reference's `filter: drop-shadow` |
 | Shortcuts never take over browser combinations; characters typed with AltGr still work | Ctrl+R must reload; `@` needs AltGr on Spanish keyboards | Matching keys regardless of modifiers |
+| A pointer press moves the key down at once, but the key acts on click | A press can still be cancelled by moving away (WCAG 2.5.2 Pointer Cancellation) | Acting on pointer down |
+| A mouse press on a key keeps focus on the machine; Enter or Space on a key that has keyboard focus presses that key | Enter keeps meaning equals after clicking, while Tab users get standard button behavior | Moving focus to the clicked key |
+| Held keys do not repeat | A desk calculator key types once per press | Auto-repeat from the operating system |
 | Key sound starts on, with a visible switch to turn it off | Reviewers notice it. Trade-off: the usual best practice is sound off by default, and a reviewer in a quiet room may be surprised | Sound off by default |
 | Sounds are loaded and decoded with the Web Audio API when the browser is idle after the first paint; playback starts on the first user action | The first key press sounds and nothing blocks the first paint | Loading on the first press, which would make it silent |
 

@@ -1,4 +1,34 @@
-import type { KeyDefinition } from "./keys";
+import { type KeyDefinition, type KeyId, keys } from "./keys";
+
+const normalize = (key: string) => (key.length === 1 ? key.toLowerCase() : key);
+
+const keyByShortcut = new Map<string, KeyId>(
+  keys.flatMap((key) =>
+    key.shortcuts.map((shortcut) => [normalize(shortcut), key.id] as const),
+  ),
+);
+
+/** The key a KeyboardEvent.key value presses, if any. Letters match either case. */
+export function keyForShortcut(eventKey: string): KeyId | undefined {
+  return keyByShortcut.get(normalize(eventKey));
+}
+
+interface ModifierState {
+  ctrlKey: boolean;
+  metaKey: boolean;
+  altKey: boolean;
+  getModifierState(key: string): boolean;
+}
+
+/**
+ * Whether a key event belongs to the browser or the system: Ctrl, Cmd or Alt
+ * combinations. AltGr (reported as Ctrl+Alt on Windows) types characters
+ * such as @ on many layouts, so it is not one of them.
+ */
+export function isSystemShortcut(event: ModifierState): boolean {
+  if (event.getModifierState("AltGraph")) return false;
+  return event.ctrlKey || event.metaKey || event.altKey;
+}
 
 // aria-keyshortcuts names physical keys. Characters that need Shift on a US
 // layout are written as that key; the numeric keypad types the rest unmodified.

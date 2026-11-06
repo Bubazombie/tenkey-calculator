@@ -1,5 +1,6 @@
 import { classNames } from "./classNames";
 import { useId } from "react";
+import type { InputHandlers } from "../input/useMachineInput";
 import { keys } from "../calculator/keys";
 import { shortcutHelp } from "../calculator/shortcuts";
 import type { MachineView } from "../calculator/view";
@@ -16,14 +17,17 @@ const help = shortcutHelp(keys);
 interface MachineProps {
   view: MachineView;
   onToggleSound?: (() => void) | undefined;
+  /** Pointer and keyboard handlers from useMachineInput; none for a static machine. */
+  handlers?: InputHandlers | undefined;
 }
 
 /** The printing calculator, drawn from top to bottom as in design/README.md. */
-export function Machine({ view, onToggleSound }: MachineProps) {
+export function Machine({ view, onToggleSound, handlers }: MachineProps) {
   const helpId = useId();
   return (
     <div className={styles.frame}>
       <div
+        {...handlers?.machine}
         className={styles.machine}
         // Focusable so its keyboard shortcuts work only while it has focus.
         tabIndex={0}
@@ -50,7 +54,10 @@ export function Machine({ view, onToggleSound }: MachineProps) {
               soundOn={view.soundOn}
               onToggleSound={onToggleSound}
             />
-            <Keypad pressedKeys={view.pressedKeys} />
+            <Keypad
+              pressedKeys={view.pressedKeys}
+              keyHandlers={handlers?.key}
+            />
           </div>
         </div>
 

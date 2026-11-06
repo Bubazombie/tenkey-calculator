@@ -91,13 +91,11 @@
   pointer-events: none;
 }
 
-.key[data-pressed="true"] .cap,
-.key:active .cap {
+.key[data-pressed="true"] .cap {
   transform: translateY(var(--travel));
 }
 
-.key[data-pressed="true"] .cap::after,
-.key:active .cap::after {
+.key[data-pressed="true"] .cap::after {
   opacity: 0.64;
 }
 

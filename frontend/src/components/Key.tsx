@@ -1,3 +1,4 @@
+import type { ButtonHTMLAttributes } from "react";
 import type { KeyDefinition } from "../calculator/keys";
 import { ariaKeyShortcuts } from "../calculator/shortcuts";
 import styles from "./Key.module.css";
@@ -6,13 +7,16 @@ import { KeyLegend } from "./KeyLegend";
 interface KeyProps {
   definition: KeyDefinition;
   pressed: boolean;
+  /** Pointer and click handlers from the input hook. */
+  handlers?: ButtonHTMLAttributes<HTMLButtonElement> | undefined;
 }
 
 /** One key. The cap moves on press; the button and its hit area stay still. */
-export function Key({ definition, pressed }: KeyProps) {
+export function Key({ definition, pressed, handlers }: KeyProps) {
   const { column, row, columnSpan = 1, rowSpan = 1 } = definition.area;
   return (
     <button
+      {...handlers}
       type="button"
       className={styles.key}
       style={{
