@@ -21,13 +21,17 @@ const (
 var plainDecimal = regexp.MustCompile(`^-?[0-9]+(\.[0-9]+)?$`)
 
 var (
+	errTooLong         = errors.New("too long")
 	errNotPlainDecimal = errors.New("not a plain decimal")
 	errOutOfRange      = errors.New("out of range")
 )
 
 // parseNumber reads a plain decimal string and normalizes it.
 func parseNumber(s string) (*apd.Decimal, error) {
-	if len(s) > maxInputLength || !plainDecimal.MatchString(s) {
+	if len(s) > maxInputLength {
+		return nil, errTooLong
+	}
+	if !plainDecimal.MatchString(s) {
 		return nil, errNotPlainDecimal
 	}
 	d, _, err := apd.NewFromString(s)

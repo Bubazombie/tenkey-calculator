@@ -66,4 +66,4 @@ Working rules only. Decisions and their details live in README.md.
 - Everything (run after every change): `npm run check`
 - Backend: `npm run lint:backend`, `npm run test:backend`
 - Hook tests: `npm run test:hooks`
-- Go test binaries are sometimes blocked by Windows Application Control on this machine; retrying works. Fuzzing binaries are always blocked, so long fuzz runs happen on Linux.
+- Smart App Control on this machine sometimes blocks new Go test binaries: retry once at most. Fuzzing binaries are always blocked, so long fuzz runs happen on Linux. If it blocks a frontend tool, stop and tell the user; never work around it.

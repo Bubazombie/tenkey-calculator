@@ -64,12 +64,17 @@ func operationNames() []string {
 }
 
 func operandError(index int, err error) *Error {
-	if errors.Is(err, errOutOfRange) {
+	switch {
+	case errors.Is(err, errTooLong):
+		return &Error{CodeInvalidOperand, fmt.Sprintf(
+			"operands[%d] is longer than %d characters", index, maxInputLength)}
+	case errors.Is(err, errOutOfRange):
 		return &Error{CodeInvalidOperand, fmt.Sprintf(
 			"operands[%d] is out of range: at most %d significant digits, %d decimal places and an absolute value below 10^%d",
 			index, maxSignificantDigits, maxDecimalPlaces, maxIntegerDigits)}
+	default:
+		return &Error{CodeInvalidOperand, fmt.Sprintf("operands[%d] must be %s", index, formatHint)}
 	}
-	return &Error{CodeInvalidOperand, fmt.Sprintf("operands[%d] must be %s", index, formatHint)}
 }
 
 // conditionError maps a trapped decimal condition to a client error. Anything

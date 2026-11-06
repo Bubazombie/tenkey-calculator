@@ -58,12 +58,15 @@ func percent(ctx *apd.Context, result *apd.Decimal, args []*apd.Decimal) (apd.Co
 	return ctx.Quo(result, args[0], hundred)
 }
 
+// percentOf divides by 100 first: that step is exact, so the multiplication is the
+// only rounding and cannot overflow when the final result is in range.
 func percentOf(ctx *apd.Context, result *apd.Decimal, args []*apd.Decimal) (apd.Condition, error) {
-	conditions, err := ctx.Mul(result, args[0], args[1])
+	fraction := new(apd.Decimal)
+	conditions, err := ctx.Quo(fraction, args[1], hundred)
 	if err != nil {
 		return conditions, err
 	}
-	more, err := ctx.Quo(result, result, hundred)
+	more, err := ctx.Mul(result, args[0], fraction)
 	return conditions | more, err
 }
 

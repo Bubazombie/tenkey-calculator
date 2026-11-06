@@ -44,6 +44,8 @@ func TestCalculateResults(t *testing.T) {
 		{"percent", "percent", []string{"50"}, "0.5"},
 		{"percent of", "percent_of", []string{"200", "10"}, "20"},
 		{"percent of with decimals", "percent_of", []string{"19.99", "21"}, "4.1979"},
+		{"percent of the largest value", "percent_of", []string{"9999999999999999999999999999999999", "50"}, "5000000000000000000000000000000000"},
+		{"percent of above 100 near the limit", "percent_of", []string{"5000000000000000000000000000000000", "150"}, "7500000000000000000000000000000000"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -152,16 +154,34 @@ func TestCalculateErrors(t *testing.T) {
 	}
 }
 
-func TestInvalidOperandDetailNamesOperandAndFormat(t *testing.T) {
-	_, err := Calculate("add", []string{"1", "1e5"})
-	var calcErr *Error
-	if !errors.As(err, &calcErr) {
-		t.Fatalf("error = %v, want *Error", err)
+// The detail names the operand and its actual problem.
+func TestInvalidOperandDetails(t *testing.T) {
+	tests := []struct {
+		name     string
+		operand  string
+		contains []string
+		excludes string
+	}{
+		{"wrong format", "1e5", []string{"operands[1]", "plain decimal"}, ""},
+		{"too long", strings.Repeat("1", 101), []string{"operands[1]", "100 characters"}, "plain decimal"},
+		{"out of range", "1" + strings.Repeat("0", 34), []string{"operands[1]", "out of range"}, "plain decimal"},
 	}
-	for _, want := range []string{"operands[1]", "plain decimal"} {
-		if !strings.Contains(calcErr.Detail, want) {
-			t.Errorf("detail %q does not mention %q", calcErr.Detail, want)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := Calculate("add", []string{"1", tt.operand})
+			var calcErr *Error
+			if !errors.As(err, &calcErr) {
+				t.Fatalf("error = %v, want *Error", err)
+			}
+			for _, want := range tt.contains {
+				if !strings.Contains(calcErr.Detail, want) {
+					t.Errorf("detail %q does not mention %q", calcErr.Detail, want)
+				}
+			}
+			if tt.excludes != "" && strings.Contains(calcErr.Detail, tt.excludes) {
+				t.Errorf("detail %q mentions %q", calcErr.Detail, tt.excludes)
+			}
+		})
 	}
 }
 

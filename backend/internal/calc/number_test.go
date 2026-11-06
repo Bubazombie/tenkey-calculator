@@ -3,6 +3,7 @@ package calc
 import (
 	"errors"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -47,6 +48,7 @@ func TestParseNumberRejects(t *testing.T) {
 		{"5.", errNotPlainDecimal},
 		{"1e5", errNotPlainDecimal},
 		{"-", errNotPlainDecimal},
+		{strings.Repeat("0", 101), errTooLong},
 		{"12345678901234567890123456789012345", errOutOfRange},
 	}
 	for _, tt := range tests {
