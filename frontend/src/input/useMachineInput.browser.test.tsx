@@ -112,6 +112,39 @@ describe("keyboard", () => {
     expect(onKeyUp.mock.calls).toEqual([["digit7"]]);
   });
 
+  test("a key typed with Shift comes back up when released after Shift", async () => {
+    const { machine, key } = await setup();
+    // Shift+5 goes down as "%", but comes up as "5" once Shift is released.
+    keydown(machine.element(), { key: "%", code: "Digit5", shiftKey: true });
+    await expect
+      .element(key("Percent"))
+      .toHaveAttribute("data-pressed", "true");
+    machine
+      .element()
+      .dispatchEvent(
+        new KeyboardEvent("keyup", { key: "5", code: "Digit5", bubbles: true }),
+      );
+    await expect
+      .element(key("Percent"))
+      .toHaveAttribute("data-pressed", "false");
+  });
+
+  test.each(["focus leaves the machine", "the window loses focus"])(
+    "pressed keys come back up when %s",
+    async (cause) => {
+      const { machine, key, screen } = await setup();
+      machine.element().focus();
+      keydown(machine.element(), { key: "7", code: "Digit7" });
+      await expect.element(key("7")).toHaveAttribute("data-pressed", "true");
+      if (cause === "the window loses focus") {
+        window.dispatchEvent(new FocusEvent("blur"));
+      } else {
+        screen.getByRole("button", { name: "Outside" }).element().focus();
+      }
+      await expect.element(key("7")).toHaveAttribute("data-pressed", "false");
+    },
+  );
+
   test.each(["{Enter}", " "])(
     "%s on a focused key presses that key",
     async (keys) => {

@@ -7,6 +7,7 @@ import {
   type PointerEvent,
   type RefObject,
   useCallback,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -72,6 +73,24 @@ export function useMachineInput({ onPress, onKeyDown, onKeyUp }: Callbacks) {
     [onKeyUp],
   );
 
+  // Which key each physical key pressed: Shift+5 goes down as "%" but can
+  // come up as "5", so the release is matched by the physical key.
+  const keyByCodeRef = useRef(new Map<string, KeyId>());
+
+  /** Lifts every key without a sound, when key-up events can no longer arrive. */
+  const releaseAll = useCallback(() => {
+    pressedRef.current.clear();
+    keyByCodeRef.current.clear();
+    setPressedKeys([]);
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener("blur", releaseAll);
+    return () => {
+      window.removeEventListener("blur", releaseAll);
+    };
+  }, [releaseAll]);
+
   const machine: MachineHandlers = {
     ref: machineRef,
     onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -83,19 +102,24 @@ export function useMachineInput({ onPress, onKeyDown, onKeyUp }: Callbacks) {
         return;
       event.preventDefault();
       if (event.repeat) return;
+      keyByCodeRef.current.set(event.code, key);
       down(key);
       onPress(key);
     },
     onKeyUp(event: KeyboardEvent<HTMLDivElement>) {
-      const key = keyForShortcut(event.key);
+      const key =
+        keyByCodeRef.current.get(event.code) ?? keyForShortcut(event.key);
+      keyByCodeRef.current.delete(event.code);
       if (key) up(key);
     },
     onFocus() {
       setKeyboardActive(true);
     },
     onBlur(event: FocusEvent<HTMLDivElement>) {
-      if (!event.currentTarget.contains(event.relatedTarget))
+      if (!event.currentTarget.contains(event.relatedTarget)) {
         setKeyboardActive(false);
+        releaseAll();
+      }
     },
   };
 
