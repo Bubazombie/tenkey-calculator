@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenkey design reference</title>
+<!-- Static design reference: no logic. The 5 key is drawn in its pressed state. Resize the window to see it scale. -->
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+@font-face { font-family: "DSEG7"; src: url(fonts/DSEG7Classic-BoldItalic.woff2) format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
+body { margin: 0; }
+.tk-wrap { container-type: inline-size; }
+.tk-machine { --line: max(2px, .58cqw); --u: calc(18.8cqw - var(--line)); position: relative; outline: none; filter: drop-shadow(3.6cqw 3.6cqw 0 #f3a4c5); }
+.tk-machine:focus-visible { outline: 3px solid #40102f; outline-offset: 6px; border-radius: 8px; }
+
+.tk-roll { position: relative; z-index: 0; width: 60cqw; height: 9.8cqw; margin: 0 auto; box-sizing: border-box; border: var(--line) solid #40102f; border-radius: 2.8cqw; background: linear-gradient(#fffaf1 0 26%, #f3e6d3 26% 30%, #fffaf1 30% 70%, #f3e6d3 70% 74%, #efe0ca 74%); }
+.tk-roll::before, .tk-roll::after { content: ""; position: absolute; top: 2.6cqw; width: 6cqw; height: 4cqw; box-sizing: border-box; background: #5b1a47; border: var(--line) solid #40102f; }
+.tk-roll::before { right: 100%; border-radius: 1.2cqw 0 0 1.2cqw; }
+.tk-roll::after { left: 100%; border-radius: 0 1.2cqw 1.2cqw 0; }
+.tk-tape { position: relative; z-index: 2; width: 53.6cqw; height: calc(5.8em + 2.4cqw + var(--line)); margin: -4.2cqw auto 0; box-sizing: border-box; padding: .6cqw 3.2cqw 1.8cqw; border: var(--line) solid #40102f; border-bottom: 0; background: #fffaf1; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; font-family: 'Courier Prime', 'Courier New', monospace; font-size: max(12px, 3.6cqw); line-height: 1.45; text-align: right; color: #6b4560; }
+.tk-lines { display: flex; flex-direction: column; }
+.tk-lines[data-tick="0"] { animation: tk-feed-a 140ms ease-out; }
+.tk-lines[data-tick="1"] { animation: tk-feed-b 140ms ease-out; }
+@keyframes tk-feed-a { from { transform: translateY(1.45em); } to { transform: none; } }
+@keyframes tk-feed-b { from { transform: translateY(1.45em); } to { transform: none; } }
+.tk-line { min-height: 1.45em; overflow-wrap: anywhere; }
+.tk-line[data-kind="last"] { color: #40102f; font-weight: 700; }
+.tk-line[data-kind="err"] { color: #b22a6d; font-weight: 700; }
+
+.tk-body { position: relative; z-index: 1; margin-top: -1cqw; box-sizing: border-box; padding: 0 5cqw 4.6cqw; border: var(--line) solid #40102f; border-radius: 4.2cqw 4.2cqw 2.4cqw 2.4cqw; background-color: #fbe3e8; background-image: radial-gradient(circle, rgba(240,103,159,.55) 1.1px, transparent 1.4px); background-size: 7px 7px; box-shadow: inset .9cqw .9cqw 0 rgba(255,255,255,.9), inset -.9cqw -.9cqw 0 rgba(178,42,109,.22); }
+.tk-housing { height: 10.6cqw; margin: 0 -5cqw; box-sizing: border-box; border-bottom: var(--line) solid #40102f; border-radius: 3.6cqw 3.6cqw 0 0; background: #f7c4d8; box-shadow: inset .9cqw .9cqw 0 rgba(255,255,255,.75), inset -.9cqw 0 0 rgba(178,42,109,.25), 0 1.4cqw 0 #dc8fb0, 0 1.4cqw 0 var(--line) #40102f; display: flex; align-items: flex-start; justify-content: center; }
+.tk-slot { position: relative; width: 60cqw; height: 3.4cqw; margin-top: 2cqw; background: #2a0920; border-radius: 1cqw; }
+.tk-slot::after { content: ""; position: absolute; left: 2cqw; right: 2cqw; top: 3cqw; height: 2.1cqw; background: linear-gradient(135deg, #cfae48 25%, transparent 25%) 0 0 / 2.1cqw 2.1cqw repeat-x, linear-gradient(225deg, #cfae48 25%, transparent 25%) 0 0 / 2.1cqw 2.1cqw repeat-x; overflow: hidden; }
+.tk-display { margin-top: 5cqw; padding: 2cqw; border: var(--line) solid #40102f; border-radius: 2cqw; background: #5b1a47; box-shadow: 0 1.2cqw 0 #2a0920, 0 1.2cqw 0 var(--line) #40102f; }
+.tk-lcd { position: relative; padding: 1.8cqw 3cqw 2.4cqw; border: var(--line) solid #2a0920; border-radius: 1cqw; background: #f9e58f; box-shadow: inset .9cqw .9cqw 0 #cfae48; display: flex; flex-direction: column; gap: .8cqw; color: #2a0920; }
+.tk-expr { height: 2.5em; display: flex; align-items: flex-end; justify-content: flex-end; font-weight: 700; font-size: max(12px, 3.5cqw); line-height: 1.25; text-align: right; }
+.tk-digits { position: relative; font-family: 'DSEG7', ui-monospace, monospace; font-style: italic; font-weight: 700; font-size: 8.4cqw; line-height: 1; text-align: right; white-space: nowrap; }
+.tk-strip { display: flex; align-items: center; justify-content: space-between; gap: 2cqw; margin: 3.4cqw 0 3.2cqw; padding: 0 1.6cqw 0 2.6cqw; border: var(--line) solid #40102f; border-radius: 1.8cqw; background: #fffaf1; }
+.tk-brand { margin: 0; font-weight: 700; font-size: 5.4cqw; line-height: 1; letter-spacing: -.01em; }
+.tk-ctrl { display: flex; align-items: center; gap: 3.4cqw; font-weight: 500; font-size: max(12px, 3.2cqw); line-height: 1; }
+.tk-chip { display: inline-flex; align-items: center; gap: 1.6cqw; white-space: nowrap; }
+.tk-led { box-sizing: border-box; width: max(11px, 2.8cqw); height: max(11px, 2.8cqw); border: 2px solid #40102f; border-radius: 50%; background: #5b1a47; }
+.tk-led[data-on="true"] { background: #f9e58f; box-shadow: 0 0 0 max(2px, .5cqw) #f0679f; }
+.tk-switch { display: inline-flex; align-items: center; min-height: 44px; margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; }
+.tk-switch:focus-visible { outline: 3px solid #40102f; outline-offset: 0; border-radius: 6px; }
+.tk-sw { position: relative; box-sizing: border-box; width: max(36px, 9.4cqw); height: max(18px, 4.6cqw); border: 2px solid #40102f; border-radius: 1cqw; background: #5b1a47; }
+.tk-sw::after { content: ""; position: absolute; top: 1px; bottom: 1px; left: 1px; width: 46%; box-sizing: border-box; border: 2px solid #40102f; border-radius: .6cqw; background: #f9e58f; transition: transform 90ms ease-out; }
+.tk-switch[aria-checked="true"] .tk-sw::after { transform: translateX(108%); }
+
+.tk-well { box-sizing: border-box; padding: 3.2cqw 3.2cqw 1.4cqw; border: var(--line) solid #40102f; border-radius: 2.4cqw; background: #f1b9cf; box-shadow: inset 0 1.2cqw 0 #dc8fb0; display: flex; flex-direction: column; gap: 3.2cqw; }
+.tk-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2.8cqw; }
+.tk-fn { grid-auto-rows: calc(var(--u) * .6); }
+.tk-pad { grid-auto-rows: calc(var(--u) * .94); }
+.tk-key { position: relative; min-width: 0; margin: 0; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.tk-key:focus-visible { outline: 3px solid #40102f; outline-offset: 2px; border-radius: 1.6cqw; z-index: 1; }
+.tk-cap { position: absolute; left: 0; right: 0; top: 0; bottom: 2.1cqw; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; border: var(--line) solid #40102f; border-radius: 1.6cqw; background: var(--top); color: var(--ink); font-weight: 700; font-size: 7.2cqw; line-height: 1; box-shadow: inset 0 .7cqw 0 rgba(255,255,255,.28), 0 1.9cqw 0 var(--side), 0 1.9cqw 0 var(--line) #40102f; transition: transform 50ms ease-out, box-shadow 50ms ease-out; }
+.tk-key[data-pressed="true"] .tk-cap, .tk-key:active .tk-cap { transform: translateY(1.4cqw); box-shadow: inset 0 .7cqw 0 rgba(255,255,255,.18), 0 .5cqw 0 var(--side), 0 .5cqw 0 var(--line) #40102f; }
+.tk-fn .tk-cap { font-size: 4.8cqw; }
+.tk-op .tk-cap { font-size: 8.8cqw; }
+.tk-d { --top: #5b1a47; --side: #2a0920; --ink: #fff1cf; }
+.tk-op { --top: #f0679f; --side: #b22a6d; --ink: #2a0920; }
+.tk-f { --top: #f7c4d8; --side: #dc8fb0; --ink: #2a0920; }
+.tk-eq { --top: #f9e58f; --side: #cfae48; --ink: #2a0920; }
+.tk-front { position: relative; z-index: 0; height: 6.2cqw; margin-top: -2.6cqw; box-sizing: border-box; border: var(--line) solid #40102f; border-radius: 0 0 3.2cqw 3.2cqw; background: linear-gradient(#b22a6d 0 1.1cqw, #5b1a47 1.1cqw); }
+.tk-feet { display: flex; justify-content: space-between; padding: 0 10cqw; margin-top: -1px; }
+.tk-foot { width: 13cqw; height: 2cqw; background: #2a0920; border-radius: 0 0 1.4cqw 1.4cqw; }
+.tk-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@media (pointer: coarse) {
+  .tk-fn { grid-auto-rows: max(44px, calc(var(--u) * .6)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tk-cap, .tk-sw::after { transition: none; }
+  .tk-lines { animation: none !important; }
+}
+</style>
+</head>
+<body>
+<main style="box-sizing: border-box; display: flex; justify-content: center; align-items: flex-start; background: #fbf3e7; min-height: 100vh; padding: 22px 30px 22px 16px">
+<div class="tk-wrap" style="flex: 0 0 auto; width: min(100%, max(254px, min(480px, calc((100vh - 44px) * .42))))">
+<div class="tk-machine" tabindex="0" role="group" aria-label="Tenkey printing calculator" aria-describedby="tk-help" style="font-family: 'Bricolage Grotesque', 'Trebuchet MS', Arial, sans-serif; color: #40102f">
+
+<div class="tk-roll" aria-hidden="true"></div>
+<div class="tk-tape" aria-hidden="true">
+<div class="tk-lines" data-tick="none">
+<div class="tk-line" data-kind="old">0.1 + 0.2 = 0.3</div>
+<div class="tk-line" data-kind="err">8 ÷ 0 = ERROR</div>
+<div class="tk-line" data-kind="old">√144 = 12</div>
+<div class="tk-line" data-kind="last">2 ^ 10 = 1024</div>
+</div>
+</div>
+
+<div class="tk-body">
+<div class="tk-housing" aria-hidden="true"><div class="tk-slot"></div></div>
+
+<div class="tk-display">
+<div class="tk-lcd">
+<div class="tk-expr"><span>2 ^ 10 =</span></div>
+<div class="tk-digits">
+<span aria-hidden="true" style="position: absolute; right: 0; top: 0; color: rgba(42,9,32,.09)">8888888888</span>
+<span style="position: relative">1024</span>
+</div>
+</div>
+</div>
+
+<div class="tk-strip">
+<h1 class="tk-brand">Tenkey</h1>
+<div class="tk-ctrl">
+<span class="tk-chip" role="img" aria-label="Keyboard input on"><span class="tk-led" data-on="true"></span><span aria-hidden="true">Keyboard</span></span>
+<button type="button" class="tk-switch" role="switch" aria-checked="true" data-action="sound"><span class="tk-chip"><span>Sound</span><span class="tk-sw" aria-hidden="true"></span></span></button>
+</div>
+</div>
+
+<div class="tk-well">
+<div class="tk-grid tk-fn">
+<button type="button" class="tk-key tk-f" data-key="sqrt" data-pressed="false" aria-label="Square root"><span class="tk-cap">√x</span></button>
+<button type="button" class="tk-key tk-f" data-key="pow" data-pressed="false" aria-label="Power"><span class="tk-cap"><span>x<sup style="font-size: .6em">y</sup></span></span></button>
+<button type="button" class="tk-key tk-f" data-key="pct" data-pressed="false" aria-label="Percent"><span class="tk-cap">%</span></button>
+<button type="button" class="tk-key tk-f" data-key="bk" data-pressed="false" aria-label="Delete last digit"><span class="tk-cap"><svg aria-hidden="true" viewBox="0 0 28 19" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round" style="width: 6.4cqw; height: auto"><path d="M10 1.5h14.5a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H10L1.5 9.5z"></path><path d="M14 6l7 7M21 6l-7 7"></path></svg></span></button>
+</div>
+<div class="tk-grid tk-pad">
+<button type="button" class="tk-key tk-f" data-key="ac" data-pressed="false" aria-label="Clear all"><span class="tk-cap" style="font-size: 6cqw">AC</span></button>
+<button type="button" class="tk-key tk-op" data-key="div" data-pressed="false" aria-label="Divide"><span class="tk-cap">÷</span></button>
+<button type="button" class="tk-key tk-op" data-key="mul" data-pressed="false" aria-label="Multiply"><span class="tk-cap">×</span></button>
+<button type="button" class="tk-key tk-op" data-key="sub" data-pressed="false" aria-label="Subtract"><span class="tk-cap">−</span></button>
+<button type="button" class="tk-key tk-d" data-key="d7" data-pressed="false"><span class="tk-cap">7</span></button>
+<button type="button" class="tk-key tk-d" data-key="d8" data-pressed="false"><span class="tk-cap">8</span></button>
+<button type="button" class="tk-key tk-d" data-key="d9" data-pressed="false"><span class="tk-cap">9</span></button>
+<button type="button" class="tk-key tk-op" data-key="add" data-pressed="false" aria-label="Add" style="grid-row: span 2"><span class="tk-cap">+</span></button>
+<button type="button" class="tk-key tk-d" data-key="d4" data-pressed="false"><span class="tk-cap">4</span></button>
+<button type="button" class="tk-key tk-d" data-key="d5" data-pressed="true"><span class="tk-cap">5</span></button>
+<button type="button" class="tk-key tk-d" data-key="d6" data-pressed="false"><span class="tk-cap">6</span></button>
+<button type="button" class="tk-key tk-d" data-key="d1" data-pressed="false"><span class="tk-cap">1</span></button>
+<button type="button" class="tk-key tk-d" data-key="d2" data-pressed="false"><span class="tk-cap">2</span></button>
+<button type="button" class="tk-key tk-d" data-key="d3" data-pressed="false"><span class="tk-cap">3</span></button>
+<button type="button" class="tk-key tk-d" data-key="d0" data-pressed="false" style="grid-column: span 2"><span class="tk-cap">0</span></button>
+<button type="button" class="tk-key tk-d" data-key="dot" data-pressed="false" aria-label="Decimal point"><span class="tk-cap" style="font-size: 11cqw; line-height: .5; padding-bottom: 3.6cqw">.</span></button>
+<button type="button" class="tk-key tk-eq" data-key="eq" data-pressed="false" aria-label="Equals" style="grid-column: 4; grid-row: 4 / span 2"><span class="tk-cap">=</span></button>
+</div>
+</div>
+</div>
+
+<div class="tk-front" aria-hidden="true"></div>
+<div class="tk-feet" aria-hidden="true"><span class="tk-foot"></span><span class="tk-foot"></span></div>
+
+<p id="tk-help" class="tk-sr">Type numbers and operators on your keyboard while this calculator has focus. Enter shows the result, Backspace deletes the last digit, Escape clears everything, the caret key is power and R is square root.</p>
+<div class="tk-sr" role="status" aria-live="polite"></div>
+</div>
+</div>
+</main>
+</body>
+</html>
