@@ -114,8 +114,9 @@ export function useMachineInput({ onPress, onKeyDown, onKeyUp }: Callbacks) {
     },
     onMouseDown(event: MouseEvent<HTMLButtonElement>) {
       // Keep focus on the machine, so Enter still means equals after a click.
+      // focusVisible: false because a click must not draw the keyboard focus ring.
       event.preventDefault();
-      machineRef.current?.focus({ preventScroll: true });
+      machineRef.current?.focus({ preventScroll: true, focusVisible: false });
     },
     onClick(event: MouseEvent<HTMLButtonElement>) {
       // A click from Enter or Space on a focused key has no pointer press to sound.

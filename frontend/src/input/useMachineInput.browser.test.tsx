@@ -137,6 +137,17 @@ describe("pointer", () => {
     expect(pressed()).toEqual(["digit7", "equals"]);
   });
 
+  test("a click does not draw the keyboard focus ring; Tab does", async () => {
+    const { machine, key, screen } = await setup();
+    await userEvent.click(key("7"));
+    await expect.element(machine).toHaveFocus();
+    expect(machine.element().matches(":focus-visible")).toBe(false);
+    screen.getByRole("button", { name: "Outside" }).element().focus();
+    await userEvent.tab();
+    await expect.element(machine).toHaveFocus();
+    expect(machine.element().matches(":focus-visible")).toBe(true);
+  });
+
   test("pressing down only moves the key; the action waits for the click (WCAG 2.5.2)", async () => {
     const { key } = await setup();
     const button = key("7").element();
