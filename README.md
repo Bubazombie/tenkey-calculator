@@ -219,6 +219,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | AC clears the display and pending operation but keeps the tape | Like real paper | Clearing the tape too |
 | A minus pressed before any digit makes the number negative; pressed again it removes the sign; any other operator replaces the pending one and clears the sign | No extra key. Trade-off: a pending operator cannot be changed to minus directly | A ± key |
 | Keys pressed while a request is pending are queued and applied in order; an error or AC empties the queue | Fast typists and slow connections lose no input | Ignoring keys while waiting |
+| After no connection, = resends exactly the failed request, with the same purpose, until another key is pressed | A failed square root or percent retries as itself, not as the pending operation | Rebuilding the request from the current state |
 | AC cancels a pending request; a request with no answer after 10 seconds counts as no connection | The person is never stuck waiting | No timeout |
 | "Calculating..." appears only after 400 ms | Fast answers do not flash a message | Showing it on every request |
 | The API client turns every answer into an outcome: a result, an API error with its code, or no connection (a network failure, or a 502, 503 or 504 from a gateway that cannot reach the API); only an abort rejects | The calculator logic handles one closed set of cases, and a stopped backend behind the dev proxy reads as "No connection" | Throwing on HTTP errors |

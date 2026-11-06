@@ -145,6 +145,23 @@ export function applyKey(
   state: CalculatorState,
   action: KeyAction,
 ): CalculatorState {
+  const { retry } = state;
+  if (retry && action.type === "equals") {
+    // After no connection, = sends exactly the failed request again.
+    return withRequest(
+      { ...state, retry: null },
+      retry.operation,
+      retry.operands,
+      retry.purpose,
+    );
+  }
+  return applyKeyAction({ ...state, retry: null }, action);
+}
+
+function applyKeyAction(
+  state: CalculatorState,
+  action: KeyAction,
+): CalculatorState {
   switch (action.type) {
     case "digit":
       return type(state, (text) => appendDigit(text, action.digit));

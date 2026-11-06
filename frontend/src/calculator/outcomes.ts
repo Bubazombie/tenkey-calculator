@@ -72,6 +72,7 @@ export function applyOutcome(
       return {
         ...state,
         request: null,
+        retry: request,
         queue: [],
         message: "noConnection",
         announcement: messages.noConnection,

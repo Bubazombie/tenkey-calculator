@@ -271,6 +271,46 @@ describe("failures", () => {
     });
   });
 
+  test.each([
+    ["a square root", "9@", { operation: "sqrt", operands: ["9"] }],
+    ["a lone percent", "50%", { operation: "percent", operands: ["50"] }],
+    [
+      "a percent inside a pending operation",
+      "200+10%",
+      { operation: "percent_of", operands: ["200", "10"] },
+    ],
+    [
+      "an operator that chains",
+      "2+3*",
+      { operation: "add", operands: ["2", "3"] },
+    ],
+  ])("after no connection, = resends %s exactly", (_name, keys, expected) => {
+    const failed = answer(press(initialState, keys), { kind: "noConnection" });
+    const retried = press(failed, "=");
+    expect(request(retried)).toEqual(expected);
+    expect(retried.request?.purpose).toEqual(failed.retry?.purpose);
+  });
+
+  test("a retried percent still replaces the operand", () => {
+    let state = answer(press(initialState, "200+10%"), {
+      kind: "noConnection",
+    });
+    state = answer(press(state, "="), result("20"));
+    expect(view(state).digits).toBe("20");
+    expect(request(press(state, "="))).toEqual({
+      operation: "add",
+      operands: ["200", "20"],
+    });
+  });
+
+  test("any other key drops the failed request", () => {
+    const failed = answer(press(initialState, "9@"), { kind: "noConnection" });
+    const state = press(failed, "4");
+    expect(state.retry).toBeNull();
+    expect(view(state).topLine).toEqual({ kind: "empty" });
+    expect(press(state, "=").request).toBeNull();
+  });
+
   test("a slow request shows Calculating...", () => {
     let state = press(initialState, "12*3=");
     const id = state.request?.id ?? 0;

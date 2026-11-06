@@ -31,6 +31,8 @@ export interface CalculatorState {
   /** The finished calculation shown on the top line, ending with "=". */
   finished: { operation: Operation; operands: readonly string[] } | null;
   request: CalculationRequest | null;
+  /** A request that got no connection; = sends it again until another key is pressed. */
+  retry: CalculationRequest | null;
   /** The request has taken long enough to show "Calculating...". */
   slow: boolean;
   /** Keys pressed while a request was in flight, applied when it ends. */
@@ -49,6 +51,7 @@ export const initialState: CalculatorState = {
   pending: null,
   finished: null,
   request: null,
+  retry: null,
   slow: false,
   queue: [],
   message: null,
