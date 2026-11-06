@@ -5,6 +5,32 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
+test("the page loads with no failed request and no console error", async ({
+  browser,
+}) => {
+  const page = await browser.newPage();
+  const problems: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") problems.push(message.text());
+  });
+  page.on("response", (response) => {
+    if (response.status() >= 400)
+      problems.push(`${String(response.status())} ${response.url()}`);
+  });
+  await page.goto("/", { waitUntil: "networkidle" });
+  expect(problems).toEqual([]);
+  await page.close();
+});
+
+// Without a declared icon, browsers request /favicon.ico and log a 404.
+// Headless Chromium skips favicons, so the icon is checked directly.
+test("the page declares an icon that loads", async ({ page, request }) => {
+  const href = await page.locator('link[rel="icon"]').getAttribute("href");
+  expect(href).toBeTruthy();
+  const response = await request.get(href ?? "");
+  expect(response.status()).toBe(200);
+});
+
 test("a calculation with the mouse", async ({ page }) => {
   const { key, digits, tape } = calculator(page);
   for (const name of ["1", "2", "Times", "3", "Equals"])

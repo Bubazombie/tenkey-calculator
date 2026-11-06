@@ -190,7 +190,18 @@ _Added with the UI._
 
 ## Performance
 
-_Lighthouse and bundle size numbers added after measuring._
+Lighthouse 13.6 against the Docker image (`localhost`, Lighthouse's simulated throttling for mobile):
+
+| Preset | Performance | Accessibility | Best practices | FCP | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| Mobile | 100 | 100 | 100 | 0.8 s | 0.8 s | 0 ms | 0 |
+| Desktop | 100 | 100 | 100 | 0.2 s | 0.2 s | 0 ms | 0 |
+
+Transferred on first load: 179 KB in 20 requests: 73 KB of JavaScript (gzipped), 68 KB of fonts, 33 KB of key sounds (loaded when idle, after the first paint), and a 3.7 KB stylesheet.
+
+Remaining Lighthouse notes, kept on purpose: about 44 KB of the bundle is React code not used at first load (splitting a single-screen app would not remove it from the first load), the one stylesheet is render blocking (it is needed for the first paint), and the tape font is discovered through the CSS (it is not in the first paint; the two fonts that are are preloaded).
+
+To measure again: `docker build -t tenkey . && docker run --rm -p 8080:8080 tenkey`, then `npx lighthouse http://localhost:8080/ --view`.
 
 ## Decisions and trade-offs
 
@@ -317,6 +328,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Coverage is delivered as a README table plus one command that regenerates both reports, with minimum thresholds | Readable without a login, never expires, and the check fails if coverage drops | CI artifacts only |
 | End-to-end tests run Playwright against the Go server serving the production build, in two projects: desktop (a table of 12 typed calculations covering every operation key and operand order, mouse, keyboard only, API error and recovery, no connection and retry) and 375px with touch (44px keys, tapping); each runs axe | The same setup as Docker, and the flows that matter most, without duplicating the component tests | Testing against the Vite dev server |
 | The comparison against `design/reference.html` is a review tool, not a CI gate | The reference loads fonts from Google and we changed a few things on purpose | A pixel-diff gate in CI |
+| An SVG favicon in the design's palette | Without a declared icon, browsers request /favicon.ico and log a 404, which Lighthouse counts against best practices | No icon |
 | Performance measured locally with Lighthouse and bundle size, numbers recorded here | Enough evidence for a project this size | A Lighthouse CI job |
 | All text files are stored with LF; images, fonts and sounds are marked binary | The commit hook runs under sh on Windows, and binaries never depend on detection | Relying on each developer's `core.autocrlf` |
 | Plain imperative commit subjects | Short and readable in a small repo | Conventional Commits prefixes |
