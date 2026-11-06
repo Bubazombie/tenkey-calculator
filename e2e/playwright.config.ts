@@ -13,7 +13,7 @@ export default defineConfig({
   projects: [
     {
       name: "desktop",
-      testMatch: "desktop.spec.ts",
+      testMatch: ["desktop.spec.ts", "calculations.spec.ts"],
       use: {
         ...devices["Desktop Chrome"],
         viewport: { width: 1280, height: 860 },
@@ -35,7 +35,8 @@ export default defineConfig({
     command: `npm run build --workspace frontend && cd backend && go run ./cmd/server -addr 127.0.0.1:${String(PORT)} -static ../frontend/dist`,
     cwd: "..",
     url: `http://127.0.0.1:${String(PORT)}/`,
-    reuseExistingServer: false,
+    // Locally, a server already running on the port is reused (for example in Docker).
+    reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },
 });
