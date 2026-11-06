@@ -6,7 +6,8 @@
     "node": ">=24"
   },
   "workspaces": [
-    "frontend"
+    "frontend",
+    "e2e"
   ],
   "scripts": {
     "coverage": "node scripts/coverage.mjs",
@@ -16,6 +17,7 @@
     "typecheck:frontend": "npm run typecheck --workspace frontend",
     "lint:frontend": "npm run lint --workspace frontend",
     "test:frontend": "npm run test --workspace frontend",
+    "test:e2e": "npm run test --workspace e2e",
     "test:hooks": "node --test .githooks/commit-msg.test.mjs"
   }
 }
