@@ -2,7 +2,7 @@
 
 A full-stack calculator drawn as a desktop printing calculator. The React frontend sends every calculation to a Go REST API that computes with exact decimals, so 0.1 + 0.2 is 0.3. Each finished calculation prints a line on the paper tape.
 
-_Screenshot added when the UI is built._
+![The Tenkey calculator: a pink printing calculator with a paper tape showing 0.1 + 0.2 = 0.3, 8 ÷ 0 = ERROR, √144 = 12 and 2 ^ 10 = 1024, and 1024 on the display](docs/screenshot.png)
 
 ## Quick start (Docker)
 
@@ -186,7 +186,14 @@ Go by package: `api` 98.0%, `calc` 92.3%, `web` 87.3%, `cmd/server` 27.0%. The s
 
 ## Accessibility
 
-_Added with the UI._
+The target is WCAG 2.2 AA.
+
+- **Keyboard:** every key works from the keyboard while the calculator has focus (the shortcut list is in the help text, generated from the key table). Tab reaches the calculator, the sound switch and every key; Enter or Space on a focused key presses it. Single-key shortcuts never fire outside the calculator (2.1.4) and never take over browser shortcuts. Focus is always visible.
+- **Screen readers:** the calculator is a labelled group described by its shortcut help. Every key has a name that starts with its visible label (2.5.3) and exposes its shortcut with `aria-keyshortcuts`. The tape is a list read in words ("square root of 144 = 12"), and a polite live region announces each result or error.
+- **Pointer and touch:** a key acts on click, so a press can be cancelled by moving away (2.5.2). Keys are at least 24px (2.5.8), and at least 44px tall on touch screens.
+- **Motion and color:** key travel, the switch and the tape feed are instant with reduced motion. Every text and legend pair in the design measures at least 5.6:1.
+- **States:** slow answers, API errors and no connection each show a message that says what happened and what to do next.
+- **Checked by:** axe-core on every machine state in component tests and on the live page in the end-to-end tests (desktop and 375px touch), plus tests for names, shortcuts, focus, target sizes and message fit. Not yet checked with real screen readers or Safari.
 
 ## Performance
 
@@ -338,11 +345,21 @@ Each entry gives the decision, why, and the main alternative not picked.
 
 The brief suggests 2 to 4 hours and asks to prioritize correctness, clarity and maintainability. I chose to go further on the UI, accessibility and tests; everything else stays lean.
 
-_Total and breakdown added at the end._
+About 2 hours 45 minutes of building, by the session clock (13:45 to 16:30), on top of the design rounds done beforehand:
+
+| Part | Time |
+|---|---|
+| Plan, repository, rules and tooling | 35 min |
+| Backend: exact arithmetic and the API | 30 min |
+| Frontend setup, fonts, static machine and design comparison | 45 min |
+| Calculator logic, input, sound and API connection | 25 min |
+| Serving, Docker, coverage, end-to-end tests, CI, arithmetic oracle and performance | 30 min |
 
 ## How I used AI
 
-_Added at the end._
+- **Design:** I worked out the UI beforehand in a separate Claude chat, over several rounds of mock-ups, until I approved the version in `design/`. I used that chat to review my prompts and the code as well.
+- **Building:** I built the project with Claude Code in one conversation, exported in full to `docs/ai-conversation.md`. I set the working rules (`CLAUDE.md`), made the product and design decisions, and reviewed every step; Claude Code researched the options, wrote the code and tests, and ran the checks.
+- **Guardrails:** every check had to be seen failing before it was trusted, every decision went into this README with its alternative, and a commit hook keeps AI attribution out of the history.
 
 ## Git hooks
 
