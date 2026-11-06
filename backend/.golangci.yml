@@ -11,6 +11,12 @@ linters:
     - revive
     - unconvert
     - usestdlibvars
+  exclusions:
+    rules:
+      # Tests use seeded math/rand on purpose: failures must be reproducible.
+      - path: _test\.go
+        linters: [gosec]
+        text: G404
 
 formatters:
   enable:

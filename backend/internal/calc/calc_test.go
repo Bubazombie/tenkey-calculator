@@ -200,6 +200,9 @@ func FuzzCalculate(f *testing.F) {
 		for _, name := range operationNames() {
 			operands := []string{a, b}[:operations[name].operands]
 			got, err := Calculate(name, operands)
+			if isRational(name) && allValid(operands) {
+				checkAgainstOracle(t, name, operands, got, err)
+			}
 			if err != nil {
 				var calcErr *Error
 				if !errors.As(err, &calcErr) {

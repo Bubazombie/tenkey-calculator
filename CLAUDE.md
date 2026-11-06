@@ -70,4 +70,4 @@ Working rules only. Decisions and their details live in README.md.
 - Compare the UI with the design (frontend dev server running): `node scripts/compare-reference.mjs`
 - Frontend test names: `*.test.ts` runs in Node, `*.browser.test.ts(x)` runs in Chromium.
 - Hook tests: `npm run test:hooks`
-- Smart App Control on this machine sometimes blocks new Go test binaries: retry once at most. Fuzzing binaries are always blocked, so long fuzz runs happen on Linux. If it blocks a frontend tool, stop and tell the user; never work around it.
+- Smart App Control on this machine sometimes blocks new Go test binaries: retry once at most, then run the Go tests on Linux in the official image: `docker run --rm -v "${PWD}\backend:/src" -w /src -e CGO_ENABLED=0 golang:1.27-alpine go test ./...` (fuzzing too). If it blocks a frontend tool, stop and tell the user; never work around it.
