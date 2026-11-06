@@ -1,0 +1,29 @@
+/* Design tokens from design/README.md. Components use these, never raw values. */
+:root {
+  /* Palette */
+  --color-paper: #fbf3e7;
+  --color-tape: #fffaf1;
+  --color-plum: #40102f;
+  --color-plum-key: #5b1a47;
+  --color-plum-deep: #2a0920;
+  --color-magenta: #f0679f;
+  --color-magenta-deep: #b22a6d;
+  --color-pink: #f7c4d8;
+  --color-pink-deep: #dc8fb0;
+  --color-body-pink: #fbe3e8;
+  --color-cream: #f9e58f;
+  --color-cream-deep: #cfae48;
+  --color-shadow-pink: #f3a4c5;
+
+  /* Supporting colors used in design/reference.html */
+  --color-digit-ink: #fff1cf;
+  --color-tape-ink: #6b4560;
+  --color-roll-shade: #f3e6d3;
+  --color-roll-shade-deep: #efe0ca;
+  --color-well: #f1b9cf;
+
+  /* Type */
+  --font-ui: "Bricolage Grotesque", "Trebuchet MS", Arial, sans-serif;
+  --font-tape: "Courier Prime", "Courier New", monospace;
+  --font-display: "DSEG7", ui-monospace, monospace;
+}

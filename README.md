@@ -42,6 +42,8 @@ backend/     Go REST API
   internal/calc/   Exact decimal arithmetic and the operations table
   internal/api/    HTTP handler, request decoding, problem details
 frontend/    React + TypeScript app (Vite)
+  src/styles/      Design tokens, self-hosted fonts, global rules
+  src/assets/fonts Font files with their licenses
   src/test/        Shared test helpers (axe-core check)
 e2e/         End-to-end tests (Playwright)
 design/      Approved design reference, kept untouched
@@ -139,7 +141,7 @@ Numbers travel as JSON strings in both directions.
 | Frontend tests | `npm run test:frontend` |
 | Commit hook tests | `npm run test:hooks` |
 
-Frontend tests named `*.test.ts` run in Node (pure logic); tests named `*.browser.test.tsx` render components in a real Chromium through Vitest browser mode, and include axe-core checks against WCAG 2.2 A and AA.
+Frontend tests named `*.test.ts` run in Node (pure logic); tests named `*.browser.test.ts(x)` render components in a real Chromium through Vitest browser mode, and include axe-core checks against WCAG 2.2 A and AA.
 
 The backend has table-driven tests for the arithmetic and the number rules, and fuzz tests for parsing and every operation. The fuzz seeds run with every `go test`; a longer fuzzing run is `go test ./internal/calc -run '^$' -fuzz FuzzCalculate -fuzztime 30s` (one target at a time).
 
@@ -218,6 +220,11 @@ Each entry gives the decision, why, and the main alternative not picked.
 | The tape is readable by screen readers as a list; results are announced by a separate live region | History available to everyone without repeated announcements | Hiding the tape from assistive technology |
 | Keypad and function rows are at least 44px tall on coarse pointers | Touch target size on phones | The 24px minimum only |
 | The whole machine always fits the screen; its height cap uses `svh` | Every key visible without scrolling, and mobile toolbars do not cut it off. Trade-off: keys get smaller on short phones | Letting the page scroll for bigger keys |
+| Fonts are self-hosted as committed WOFF2 files: Latin subsets of Bricolage Grotesque 500 and 700 and Courier Prime 400 and 700 (from Fontsource 5.3.0), and the design's DSEG7 file. 88 KB in total | The same static instances Google serves the reference, explicit `@font-face` rules in one file, and hashed file names for long-term caching | `@fontsource` npm packages (harder to preload), or the variable Bricolage file (41 to 131 KB) |
+| Only DSEG7 and Bricolage 700 are preloaded; the other faces load when first used | The display digits and key legends are in the first paint; preloading everything would compete with the app's script | Preloading all five |
+| `font-display: swap` without fallback metric overrides | Every text box in the machine has a fixed size, so a font swap cannot move the layout | `size-adjust` and metric overrides on fallback fonts |
+| A global `box-sizing: border-box` | Sizes in the design mean outer sizes; one rule instead of one per element | Repeating `box-sizing` on each component, as the reference does |
+| Negative numbers show at most 9 digits | DSEG7's minus sign is as wide as a digit (816 units) and the decimal point has zero width, measured in the font file | An eleventh display cell |
 | Static shadow shapes; key travel moves an inner element with `transform` only | No repaint of a filtered layer, and the hit area stays still | The design reference's `filter: drop-shadow` |
 | Shortcuts never take over browser combinations; characters typed with AltGr still work | Ctrl+R must reload; `@` needs AltGr on Spanish keyboards | Matching keys regardless of modifiers |
 | Key sound starts on, with a visible switch to turn it off | Reviewers notice it. Trade-off: the usual best practice is sound off by default, and a reviewer in a quiet room may be surprised | Sound off by default |
@@ -233,7 +240,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | npm workspaces: one root `npm install` and one lockfile for the frontend | Reviewers run every check from the root with one install | A separate `frontend/` install and lockfile |
 | ESLint 9 (not 10) and TypeScript 6.0 (not 7), every other tool on its latest major (Vite 8, React 19.3, Vitest 5, Playwright 1.65) | `eslint-plugin-jsx-a11y` supports ESLint up to 9, and `typescript-eslint` supports TypeScript below 6.1 | The newest majors without accessibility or type-aware lint rules |
 | Strict TypeScript beyond `strict`: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, unused checks | Catches undefined array reads and loose optional props at compile time | `strict` alone |
-| Test file names choose the environment: `*.test.ts` in Node, `*.browser.test.tsx` in Chromium | The convention from the Vitest docs; logic tests stay fast | One environment for everything |
+| Test file names choose the environment: `*.test.ts` in Node, `*.browser.test.ts(x)` in Chromium | The convention from the Vitest docs; logic tests stay fast | One environment for everything |
 | Known audit finding accepted: a moderate ReDoS in the `minimatch` copy inside `typescript-eslint` | Development-only lint tool matching our own glob patterns; npm's only fix is a downgrade | Downgrading the linter or forcing an untested override |
 | Coverage is delivered as a README table plus one command that regenerates both reports, with minimum thresholds | Readable without a login, never expires, and the check fails if coverage drops | CI artifacts only |
 | The comparison against `design/reference.html` is a review tool, not a CI gate | The reference loads fonts from Google and we changed a few things on purpose | A pixel-diff gate in CI |
@@ -264,4 +271,4 @@ git config core.hooksPath .githooks
 
 - DSEG7 font by Keshikan, SIL Open Font License 1.1 (`design/fonts/DSEG-LICENSE.txt`).
 - Key sounds: the "Blue Alps" set from kbsim by Thomas Lai, MIT license (`design/sounds/LICENSE-kbsim.md`).
-- Bricolage Grotesque and Courier Prime, SIL Open Font License 1.1.
+- Bricolage Grotesque and Courier Prime, SIL Open Font License 1.1, Latin subsets from Fontsource (`frontend/src/assets/fonts/`, with their licenses).

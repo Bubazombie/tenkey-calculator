@@ -11,6 +11,7 @@ export default defineConfig({
         test: {
           name: "unit",
           include: ["src/**/*.test.ts"],
+          exclude: ["src/**/*.browser.test.ts"],
           environment: "node",
         },
       },
@@ -18,7 +19,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "browser",
-          include: ["src/**/*.browser.test.tsx"],
+          include: ["src/**/*.browser.test.{ts,tsx}"],
           browser: {
             enabled: true,
             headless: true,

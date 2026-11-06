@@ -1,0 +1,15 @@
+@import "./fonts.css";
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-plum);
+  font-family: var(--font-ui);
+}
