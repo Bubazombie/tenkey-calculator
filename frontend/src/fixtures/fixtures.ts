@@ -18,7 +18,7 @@ const referenceTape: TapeEntry[] = [
   { id: 4, operation: "power", operands: ["2", "10"], result: "1024" },
 ];
 
-/** Machine states the real calculator can reach, for tests. */
+/** Machine states the real calculator can reach, for component tests. */
 export const fixtures = {
   /** Exactly what design/reference.html shows. */
   reference: {
@@ -145,11 +145,3 @@ export const fixtures = {
 export type FixtureName = keyof typeof fixtures;
 
 export const fixtureNames = Object.keys(fixtures) as FixtureName[];
-
-/** The fixture named by ?fixture=name, or the fresh machine. */
-export function fixtureFromSearch(search: string): MachineView {
-  const name = new URLSearchParams(search).get("fixture");
-  return name !== null && Object.hasOwn(fixtures, name)
-    ? fixtures[name as FixtureName]
-    : fixtures.fresh;
-}

@@ -21,8 +21,6 @@ export interface CalculationRequest {
   operation: Operation;
   operands: readonly string[];
   purpose: Purpose;
-  /** Waiting long enough to show "Calculating...". */
-  slow: boolean;
 }
 
 export interface CalculatorState {
@@ -33,6 +31,8 @@ export interface CalculatorState {
   /** The finished calculation shown on the top line, ending with "=". */
   finished: { operation: Operation; operands: readonly string[] } | null;
   request: CalculationRequest | null;
+  /** The request has taken long enough to show "Calculating...". */
+  slow: boolean;
   /** Keys pressed while a request was in flight, applied when it ends. */
   queue: readonly KeyId[];
   message: MessageId | null;
@@ -49,6 +49,7 @@ export const initialState: CalculatorState = {
   pending: null,
   finished: null,
   request: null,
+  slow: false,
   queue: [],
   message: null,
   error: false,

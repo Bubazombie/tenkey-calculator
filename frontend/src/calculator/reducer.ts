@@ -35,7 +35,7 @@ export function calculatorReducer(
       return drainQueue(applyOutcome(state, action.requestId, action.outcome));
     case "slow":
       return state.request?.id === action.requestId
-        ? { ...state, request: { ...state.request, slow: true } }
+        ? { ...state, slow: true }
         : state;
   }
 }

@@ -34,6 +34,8 @@ npx --workspace frontend playwright install chromium   # browser for component t
 npm run dev --workspace frontend                        # http://localhost:5173
 ```
 
+The dev server forwards `/api` to the backend on `localhost:8080`, so start the backend first. Without it, the calculator shows "No connection. Press = to try again."
+
 ## Project structure
 
 ```
@@ -42,9 +44,12 @@ backend/     Go REST API
   internal/calc/   Exact decimal arithmetic and the operations table
   internal/api/    HTTP handler, request decoding, problem details
 frontend/    React + TypeScript app (Vite)
-  src/calculator/  Key table, shortcuts, line formats, messages, view model (no React)
+  src/api/         API client and the types of its request and response bodies
+  src/calculator/  Key table, calculator logic (pure reducer), formats, messages, view model
   src/components/  Presentational components, one CSS Module each
-  src/fixtures/    Machine states for review (?fixture=name) and tests
+  src/input/       Pointer and keyboard input
+  src/sound/       Key sounds (Web Audio)
+  src/fixtures/    Machine states for component tests
   src/styles/      Design tokens, self-hosted fonts, global rules
   src/assets/fonts Font files with their licenses
   src/test/        Shared test helpers (axe-core check)
@@ -145,7 +150,7 @@ Numbers travel as JSON strings in both directions.
 | Frontend tests | `npm run test:frontend` |
 | Commit hook tests | `npm run test:hooks` |
 
-To compare the UI with the approved design, start the dev server and run `node scripts/compare-reference.mjs`. It loads `design/reference.html` and `?fixture=reference` at 320x568, 375x667, 390x844 and 1280x860, prints the position and size difference of the main parts and every key, and writes screenshots and a pixel diff to a temporary folder. It is a review tool, not a test: the reference loads its fonts from Google Fonts.
+To compare the UI with the approved design, start the frontend dev server and run `node scripts/compare-reference.mjs`. It types the four calculations on the reference tape into the real app (answering the API itself, so the backend is not needed), holds the 5 key down, and compares the result with `design/reference.html` at 320x568, 375x667, 390x844 and 1280x860. It prints the position and size difference of the main parts and every key, and writes screenshots and a pixel diff to a temporary folder. It is a review tool, not a test: the reference loads its fonts from Google Fonts.
 
 Frontend tests named `*.test.ts` run in Node (pure logic); tests named `*.browser.test.ts(x)` render components in a real Chromium through Vitest browser mode, and include axe-core checks against WCAG 2.2 A and AA.
 
@@ -215,6 +220,12 @@ Each entry gives the decision, why, and the main alternative not picked.
 | A minus pressed before any digit makes the number negative; pressed again it removes the sign; any other operator replaces the pending one and clears the sign | No extra key. Trade-off: a pending operator cannot be changed to minus directly | A ± key |
 | Keys pressed while a request is pending are queued and applied in order; an error or AC empties the queue | Fast typists and slow connections lose no input | Ignoring keys while waiting |
 | AC cancels a pending request; a request with no answer after 10 seconds counts as no connection | The person is never stuck waiting | No timeout |
+| "Calculating..." appears only after 400 ms | Fast answers do not flash a message | Showing it on every request |
+| The API client turns every answer into an outcome: a result, an API error with its code, or no connection (a network failure, or a 502, 503 or 504 from a gateway that cannot reach the API); only an abort rejects | The calculator logic handles one closed set of cases, and a stopped backend behind the dev proxy reads as "No connection" | Throwing on HTTP errors |
+| The dev server and `vite preview` proxy `/api` to `localhost:8080` | The frontend calls a relative `/api` path, the same as in production where one server serves both | CORS on the API and an absolute URL in the frontend |
+| `App` takes the API request function and the sound player as optional props | Integration tests replace the network and audio without mocking modules | Module mocks |
+| A mouse press focuses the machine with `focus({ focusVisible: false })` | Otherwise Chrome draws the keyboard focus ring after a click, because the click itself never moved focus. Supported in Chromium 145+ and Firefox 104+; Safari may still show the ring | Letting the clicked key take focus, which would make Enter repeat that key instead of meaning equals |
+| Sound files are never inlined in the JavaScript bundle | Vite inlines files under 4 KB; the 2 KB recordings would have added about 20 KB to the bundle the first paint waits for | Vite's default |
 | The display rounds decimals half away from zero to fill 10 digit cells, and shows "Too large to display" when the whole part does not fit. A tiny result such as `1 ÷ 9999999999` shows `0` | Leftovers of inexact results disappear (`(1 ÷ 3 × 3) − 1` shows `0`). Trade-off: a real but tiny result also shows `0`; the full value is kept for chaining | Scientific notation, which the design has no room for |
 | The calculator logic is a pure reducer: a key that needs the API sets a request, and the answer is applied as a separate action | Every rule is tested in Node without React, timers or a server | Calling the API from inside the key handlers |
 | Keys pressed during a request are stored in the reducer's state and replayed in order when the answer arrives, stopping at the next key that needs the API | The queue is part of the tested logic, not of the network code | A queue in the hook |
@@ -231,7 +242,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | One key table (`src/calculator/keys.ts`) drives the keypad: legend, kind, accessible name, grid position and shortcuts | Adding a key or operation on the frontend touches one place; tests check the grid has no gaps or overlaps and no shortcut is used twice | Keys written out in JSX |
 | `aria-keyshortcuts` on every key names physical keys as ARIA 1.2 requires: `Plus` for +, and `Shift+5`, `Shift+6`, `Shift+2` for %, ^ and @ on a US layout | The spec asks for the key pressed, not the character; the numeric keypad types the others unmodified | Listing characters, which the spec calls incorrect |
 | The screen reader help text is generated from the key table | It can never drift from the real shortcuts | Hand-written help |
-| Static UI first, driven by fixtures picked with `?fixture=name` | Every state can be reviewed in the browser before any logic exists; the fixtures stay as test data | Building the logic first |
+| Static UI first, driven by fixtures picked with `?fixture=name`; once the real state existed the parameter was removed and the fixtures stayed as component test data | Every state could be reviewed in the browser before any logic existed | Building the logic first |
 | The square root sign is drawn as one shared inline SVG that scales with the text, on the key and on the tape, with "square root of" for screen readers | None of the three fonts has the glyph, so the reference falls back to a different system font on each platform | The font fallback |
 | Tape and top line formats: `12 × 3 = 36`, `2 ^ 10 = 1024`, `√144 = 12`, `50 % = 0.5`, `10 % of 200 = 20`, `8 ÷ 0 = ERROR`; negative numbers use the minus sign (−); `^` is read "to the power of" | Reads like a printed tape and like the keys pressed | Words such as "pow" or "sqrt" |
 | Numbers on the tape never break; long lines break at spaces | A number split across lines reads as two numbers | The reference's `overflow-wrap: anywhere` |

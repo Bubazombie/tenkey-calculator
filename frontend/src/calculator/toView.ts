@@ -13,7 +13,7 @@ function digits(state: CalculatorState): string {
 }
 
 function topLine(state: CalculatorState): TopLine {
-  if (state.request?.slow)
+  if (state.request && state.slow)
     return { kind: "message", text: messages.calculating };
   if (state.message) return { kind: "message", text: messages[state.message] };
   if (state.pending) {

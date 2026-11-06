@@ -20,7 +20,8 @@ function withRequest(
   return {
     ...state,
     message: null,
-    request: { id: state.nextId, operation, operands, purpose, slow: false },
+    request: { id: state.nextId, operation, operands, purpose },
+    slow: false,
     nextId: state.nextId + 1,
   };
 }
