@@ -18,7 +18,11 @@ _Added with the Dockerfile._
 
 ### Backend
 
-_Added with the backend._
+```
+cd backend
+go run ./cmd/server            # listens on :8080
+go run ./cmd/server -addr :9000
+```
 
 ### Frontend
 
@@ -28,6 +32,9 @@ _Added with the frontend._
 
 ```
 backend/     Go REST API
+  cmd/server/      Entry point: flags, HTTP server, graceful shutdown
+  internal/calc/   Exact decimal arithmetic and the operations table
+  internal/api/    HTTP handler, request decoding, problem details
 frontend/    React + TypeScript app
 e2e/         End-to-end tests (Playwright)
 design/      Approved design reference, kept untouched
@@ -42,11 +49,63 @@ _Filled in once both layers exist: the exact places to touch._
 
 ### POST /api/v1/calculations
 
-_Request, response and examples (curl and PowerShell) added with the backend._
+Request body: `{"operation": "<name>", "operands": ["<number>", ...]}` with `Content-Type: application/json`.
+
+| Operation | Operands | Result |
+|---|---|---|
+| `add` | a, b | a + b |
+| `subtract` | a, b | a − b |
+| `multiply` | a, b | a × b |
+| `divide` | a, b | a ÷ b |
+| `power` | a, b | a ^ b |
+| `sqrt` | a | √a |
+| `percent` | a | a ÷ 100 |
+| `percent_of` | a, b | a × b ÷ 100 |
+
+Success is `200` with `{"result": "<number>"}`.
+
+curl (bash):
+
+```
+curl -X POST http://localhost:8080/api/v1/calculations \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"add","operands":["0.1","0.2"]}'
+# {"result":"0.3"}
+```
+
+PowerShell:
+
+```
+Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/calculations `
+  -ContentType application/json `
+  -Body '{"operation":"divide","operands":["8","0"]}'
+# Throws with status 422; the body is the problem details below.
+```
 
 ### Errors
 
-_Error shape and codes table added with the backend._
+Every failure, including unknown paths and methods, returns `application/problem+json` ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)) with a stable `code`:
+
+```json
+{"type":"about:blank","title":"Unprocessable Entity","status":422,"code":"division_by_zero","detail":"division by zero is undefined"}
+```
+
+| Status | Code | When |
+|---|---|---|
+| 400 | `invalid_json` | The body is not one JSON object with `operation` and `operands` |
+| 400 | `unknown_operation` | `operation` is missing or not in the table above |
+| 400 | `wrong_operand_count` | The number of operands does not match the operation |
+| 400 | `invalid_operand` | An operand is not a plain decimal string, or is out of range |
+| 413 | `body_too_large` | The body is over 1024 bytes |
+| 415 | `unsupported_media_type` | `Content-Type` is not `application/json` |
+| 404 | `not_found` | No resource at this path |
+| 405 | `method_not_allowed` | Anything but `POST` on `/api/v1/calculations` (`Allow: POST` is set) |
+| 422 | `division_by_zero` | Division by zero, including `0 ^ -1` |
+| 422 | `domain_error` | No real result, such as `√-4` or `-8 ^ 0.5` |
+| 422 | `overflow` | The result reaches 10^34 |
+| 500 | `internal` | Unexpected failure; details are only logged on the server |
+
+`detail` is written for developers. The frontend shows its own text based on `code`.
 
 ### Number format and limits
 
@@ -118,6 +177,8 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Requests must send `Content-Type: application/json`, bodies are capped at 1 KB | A clear `415` instead of guessing the format; it also stops plain cross-site form posts. The cap fits the largest valid request | Accepting any content type |
 | 400 for requests the API cannot read (format, operation, operand count), 422 for valid requests with no mathematical answer (division by zero, domain, overflow) | Lets clients tell a bug in their request from a calculation that has no answer | 400 for everything |
 | A panic is answered with a generic 500 problem body, and the cause is logged | Every failure has the same shape and nothing internal reaches the client | Go's default, which drops the connection |
+| The HTTP layer depends on a `CalculateFunc` type it defines, not on the calc package's function directly | Interfaces belong where they are used; tests inject failing and panicking calculators | Calling `calc.Calculate` directly, which makes the 500 path untestable |
+| The server sets read, write and idle timeouts and shuts down gracefully on interrupt or SIGTERM | Slow clients cannot hold connections forever, and Docker stops cleanly | Go's zero timeouts |
 | The Go module is named `tenkey` | It is an application, not a library, so no one imports it by URL | A `github.com/...` path, possible once the repository exists |
 
 ### Calculator behavior
