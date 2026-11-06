@@ -6,7 +6,14 @@ _Screenshot added when the UI is built._
 
 ## Quick start (Docker)
 
-_Added with the Dockerfile._
+From the repository root:
+
+```
+docker build -t tenkey .
+docker run --rm -p 8080:8080 tenkey
+```
+
+Then open http://localhost:8080. One container runs the Go server, which answers `/api/` and serves the built frontend.
 
 ## Run locally
 
@@ -184,6 +191,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | The built frontend is served from a folder given at startup, not embedded in the binary | The backend builds and tests on a fresh clone without building the frontend first; the Dockerfile copies the build in | `go:embed`, which fails to compile until the frontend is built |
 | The server gzips the frontend's text files (HTML, JS, CSS, SVG) once at startup and serves them to clients that accept gzip; fonts and sounds are sent as they are | The bundle is about 3 times smaller on the wire, requests cost no CPU, and only the standard library is used | Compressing on every request, or adding a build step that writes .gz files |
 | Hashed files under /assets/ are cached for a year (immutable); index.html is revalidated on every load (no-cache); directories are never listed | New deploys show at once, while unchanged assets never download twice | Short cache lifetimes for everything |
+| A three-stage Dockerfile: Node builds the frontend, Go builds a static binary, and the final image is distroless and runs as a non-root user (17 MB) | Small image with no shell or package manager to attack, and the same server binary as local runs | One image with Node and Go, or nginx serving the frontend |
 | No health endpoint | Nothing calls one: no orchestrator, and the distroless image has no tool for a Docker health check | `GET /healthz` |
 | Root npm scripts run both layers | npm is already required and its scripts run in PowerShell and on Linux | Makefile (no `make` on Windows by default) or Taskfile (extra install) |
 
