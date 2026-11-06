@@ -9,6 +9,7 @@
     "frontend"
   ],
   "scripts": {
+    "coverage": "node scripts/coverage.mjs",
     "check": "npm run lint:backend && npm run test:backend && npm run typecheck:frontend && npm run lint:frontend && npm run test:frontend && npm run test:hooks",
     "lint:backend": "cd backend && golangci-lint run",
     "test:backend": "cd backend && go test ./...",

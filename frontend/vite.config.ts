@@ -14,6 +14,14 @@ export default defineConfig({
     assetsInlineLimit: (file) => (file.endsWith(".mp3") ? false : undefined),
   },
   test: {
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/test/**", "src/main.tsx"],
+      reporter: ["text-summary", "json-summary", "html"],
+      // A little below the current numbers: the check fails when coverage drops.
+      thresholds: { statements: 95, branches: 90, functions: 95, lines: 95 },
+    },
     projects: [
       {
         extends: true,

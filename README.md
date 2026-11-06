@@ -70,7 +70,13 @@ scripts/     Review tools (comparison with the design reference)
 
 ## Adding an operation
 
-_Filled in once both layers exist: the exact places to touch._
+For example a binary `modulo` with a `mod` key:
+
+1. **Backend:** one entry in the `operations` table in `backend/internal/calc/operations.go` (name, operand count, function), and a row in the table-driven tests in `calc_test.go`. The handler, validation, error shape and API docs need no change.
+2. **Frontend:** add `"modulo"` to `BinaryOperation` and its tape symbol to `binarySymbols` in `frontend/src/calculator/expression.ts`.
+3. **Frontend:** one entry in the key table in `frontend/src/calculator/keys.ts`: legend, kind, accessible name, grid position, shortcuts, action `{ type: "operator", operation: "modulo" }` and sound. The keypad, `aria-keyshortcuts`, the screen reader help, the tape and top-line formats and the API client follow from it. The keypad grid is full today, so a new key also needs a new row in `gridSizes`; the key table tests fail until the grid has no gaps.
+
+A new single-operand operation, like square root, also needs its `KeyAction` handled in `frontend/src/calculator/keyActions.ts`.
 
 ## API
 
@@ -152,6 +158,7 @@ Numbers travel as JSON strings in both directions.
 | What | Command |
 |---|---|
 | Everything | `npm run check` |
+| Coverage with minimums | `npm run coverage` |
 | Backend lint (gofmt, goimports, vet, staticcheck, gosec and more) | `npm run lint:backend` |
 | Backend tests | `npm run test:backend` |
 | Frontend typecheck | `npm run typecheck:frontend` |
@@ -167,7 +174,14 @@ The backend has table-driven tests for the arithmetic and the number rules, and 
 
 ### Coverage
 
-_Coverage table and the command that regenerates both reports added with the tests._
+`npm run coverage` runs both suites with coverage, writes `backend/coverage/index.html` and `frontend/coverage/index.html`, and fails if coverage drops below the minimums.
+
+| Layer | Statements | Branches | Functions | Lines | Minimum |
+|---|---|---|---|---|---|
+| Go (total) | 81.4% | | | | 80% of statements |
+| Frontend | 97.25% | 92.28% | 96.72% | 98.68% | 95%, 90%, 95%, 95% |
+
+Go by package: `api` 98.0%, `calc` 92.3%, `web` 87.3%, `cmd/server` 27.0%. The server's signal handling and graceful shutdown run in the end-to-end tests and Docker, not in unit tests.
 
 ## Accessibility
 

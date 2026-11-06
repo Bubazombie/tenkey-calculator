@@ -1,3 +1,4 @@
 dist/
 # Vitest saves a screenshot of each failing browser test here.
 .vitest/
+coverage/
