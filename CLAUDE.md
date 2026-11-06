@@ -63,4 +63,7 @@ Working rules only. Decisions and their details live in README.md.
 
 ## Commands
 
+- Everything (run after every change): `npm run check`
+- Backend: `npm run lint:backend`, `npm run test:backend`
 - Hook tests: `npm run test:hooks`
+- Go test binaries are sometimes blocked by Windows Application Control on this machine; retrying works. Fuzzing binaries are always blocked, so long fuzz runs happen on Linux.

@@ -14,6 +14,7 @@ _Added with the Dockerfile._
 
 - Go 1.27
 - Node 24
+- golangci-lint 2 for linting (`winget install GolangCI.golangci-lint` on Windows, see [install options](https://golangci-lint.run/docs/welcome/install/local/))
 
 ### Backend
 
@@ -49,7 +50,14 @@ _Error shape and codes table added with the backend._
 
 ### Number format and limits
 
-_Added with the backend._
+Numbers travel as JSON strings in both directions.
+
+- **Accepted:** any plain decimal: an optional minus, digits, and an optional point followed by digits. `3`, `-2.5`, `2.0`, `03` and `-0` are accepted and normalized. Rejected: `+3`, `.5`, `5.`, `1e5`, `NaN`, spaces, empty strings, JSON numbers, and anything longer than 100 characters.
+- **Returned:** always canonical: no exponent, no trailing zeros, never `-0`. `1.5 + 1.5` returns `"3"`.
+- **Range:** after normalizing, every operand and every result has at most 34 significant digits, at most 34 decimal places, and an absolute value below 10^34. Every result is therefore a valid operand, so calculations can be chained.
+- **Rounding:** results are rounded to 34 significant digits, then to 34 decimal places, half away from zero (`2.5` becomes `3`, `-2.5` becomes `-3`).
+- **Outside the range:** an operand gets `400 invalid_operand`; a result at or above 10^34 gets `422 overflow`; a result whose magnitude rounds below 10^-34 is `"0"`.
+- **Power and square root** are computed with 6 extra digits and then rounded, so exact results stay exact: `4 ^ 0.5` returns `"2"`. `0 ^ 0` returns `"1"`.
 
 ## Testing
 
@@ -57,7 +65,12 @@ _Added with the backend._
 
 | What | Command |
 |---|---|
+| Everything | `npm run check` |
+| Backend lint (gofmt, goimports, vet, staticcheck, gosec and more) | `npm run lint:backend` |
+| Backend tests | `npm run test:backend` |
 | Commit hook tests | `npm run test:hooks` |
+
+The backend has table-driven tests for the arithmetic and the number rules, and fuzz tests for parsing and every operation. The fuzz seeds run with every `go test`; a longer fuzzing run is `go test ./internal/calc -run '^$' -fuzz FuzzCalculate -fuzztime 30s` (one target at a time).
 
 ### Coverage
 
@@ -96,6 +109,16 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Numbers travel as JSON strings in both directions | JSON numbers are parsed as 64-bit floats, which would break exactness | JSON numbers |
 | Errors follow RFC 9457 (`application/problem+json`) plus a `code` field; the frontend owns the text it shows | A current standard; no server text reaches the user; one shape for every failure, including 404 and 405 | A custom `{error: {code, message}}` envelope |
 | 0^0 returns 1 | What most calculators and Go's `math.Pow` return | An invalid-operation error, as the decimal spec says |
+| Tolerant input, strict output: any plain decimal is accepted and normalized; results are always canonical | Someone trying the API with `2.0` should not get an error, while clients can rely on one result format | Accepting only the canonical form |
+| One range for operands and results (34 significant digits, 34 decimal places, absolute value below 10^34), plus a 100-character cap on raw input | Every result can be chained as an operand, and every request has bounded cost | Separate limits for input and output |
+| Rounding half away from zero, defined for negatives | What people expect from a calculator; `-2.5` becomes `-3` | Half-even (the IEEE default), where `2.5` becomes `2` |
+| Power and square root use 6 guard digits, then round to 34 | The library computes them approximately; the extra digits make exact results such as `4 ^ 0.5 = 2` come back exact | Computing at 34 digits, which could return `1.999...9` |
+| Results too small to represent become 0 instead of an error | Their rounded value at 34 decimal places is 0. The library reports results far below that range as an internal "exponent out of range" error, which we map to 0 | An underflow error |
+| The overflow limit is set in the decimal context itself | Huge powers such as `9999999999 ^ 9999999999` fail in microseconds instead of building a huge number | Checking the size only after computing |
+| Requests must send `Content-Type: application/json`, bodies are capped at 1 KB | A clear `415` instead of guessing the format; it also stops plain cross-site form posts. The cap fits the largest valid request | Accepting any content type |
+| 400 for requests the API cannot read (format, operation, operand count), 422 for valid requests with no mathematical answer (division by zero, domain, overflow) | Lets clients tell a bug in their request from a calculation that has no answer | 400 for everything |
+| A panic is answered with a generic 500 problem body, and the cause is logged | Every failure has the same shape and nothing internal reaches the client | Go's default, which drops the connection |
+| The Go module is named `tenkey` | It is an application, not a library, so no one imports it by URL | A `github.com/...` path, possible once the repository exists |
 
 ### Calculator behavior
 
@@ -110,6 +133,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | A minus pressed before any digit makes the number negative; pressed again it removes the sign; any other operator replaces the pending one and clears the sign | No extra key. Trade-off: a pending operator cannot be changed to minus directly | A ± key |
 | Keys pressed while a request is pending are queued and applied in order; an error or AC empties the queue | Fast typists and slow connections lose no input | Ignoring keys while waiting |
 | AC cancels a pending request; a request with no answer after 10 seconds counts as no connection | The person is never stuck waiting | No timeout |
+| The display rounds decimals half away from zero to fill 10 digit cells, and shows "Too large to display" when the whole part does not fit. A tiny result such as `1 ÷ 9999999999` shows `0` | Leftovers of inexact results disappear (`(1 ÷ 3 × 3) − 1` shows `0`). Trade-off: a real but tiny result also shows `0`; the full value is kept for chaining | Scientific notation, which the design has no room for |
 | The tape keeps only the lines it shows (plus the line leaving during the feed animation), for sighted and screen-reader users alike | The brief asks for no history; a scrollable tape adds a focus stop and scroll logic | A scrollable history |
 
 ### UI and accessibility
