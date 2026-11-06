@@ -51,6 +51,7 @@ frontend/    React + TypeScript app (Vite)
 e2e/         End-to-end tests (Playwright)
 design/      Approved design reference, kept untouched
 .githooks/   Commit message hook and its test
+scripts/     Review tools (comparison with the design reference)
 ```
 
 ## Adding an operation
@@ -143,6 +144,8 @@ Numbers travel as JSON strings in both directions.
 | Frontend lint (ESLint and Prettier) | `npm run lint:frontend` |
 | Frontend tests | `npm run test:frontend` |
 | Commit hook tests | `npm run test:hooks` |
+
+To compare the UI with the approved design, start the dev server and run `node scripts/compare-reference.mjs`. It loads `design/reference.html` and `?fixture=reference` at 320x568, 375x667, 390x844 and 1280x860, prints the position and size difference of the main parts and every key, and writes screenshots and a pixel diff to a temporary folder. It is a review tool, not a test: the reference loads its fonts from Google Fonts.
 
 Frontend tests named `*.test.ts` run in Node (pure logic); tests named `*.browser.test.ts(x)` render components in a real Chromium through Vitest browser mode, and include axe-core checks against WCAG 2.2 A and AA.
 
