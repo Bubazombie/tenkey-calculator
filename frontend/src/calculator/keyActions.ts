@@ -34,6 +34,7 @@ function startNewNumber(state: CalculatorState): CalculatorState {
         tape: state.tape,
         nextId: state.nextId,
         announcement: state.announcement,
+        announcementId: state.announcementId,
       }
     : { ...state, message: null };
 }
@@ -95,8 +96,13 @@ function operator(
   };
 }
 
+/** A typed lone minus is only a sign: there is no number yet. */
+function hasNumber(operand: Operand | null): operand is Operand {
+  return operand !== null && typedText(operand) !== "-";
+}
+
 function equals(state: CalculatorState): CalculatorState {
-  if (state.error || !state.pending || !state.operand) return state;
+  if (state.error || !state.pending || !hasNumber(state.operand)) return state;
   return withRequest(
     state,
     state.pending.operation,
@@ -115,7 +121,7 @@ function unary(
   if (state.error) return state;
   const { pending, operand } = state;
   if (pending) {
-    if (!operand) return state;
+    if (!hasNumber(operand)) return state;
     const value = operandValue(operand);
     // Windows convention: a + b % and a − b % take b percent of a.
     const isPercentOf =

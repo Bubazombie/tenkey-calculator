@@ -9,6 +9,7 @@ const base: MachineView = {
   keyboardActive: true,
   soundOn: true,
   announcement: "",
+  announcementId: 0,
 };
 
 const referenceTape: TapeEntry[] = [

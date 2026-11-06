@@ -42,6 +42,8 @@ export interface CalculatorState {
   error: boolean;
   tape: readonly TapeEntry[];
   announcement: string;
+  /** Changes with every announcement, so repeating the same text is still announced. */
+  announcementId: number;
   nextId: number;
 }
 
@@ -58,6 +60,7 @@ export const initialState: CalculatorState = {
   error: false,
   tape: [],
   announcement: "",
+  announcementId: 0,
   nextId: 1,
 };
 

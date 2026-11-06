@@ -45,5 +45,6 @@ export function toView(
     topLine: topLine(state),
     digits: digits(state),
     announcement: state.announcement,
+    announcementId: state.announcementId,
   };
 }

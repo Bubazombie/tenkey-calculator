@@ -32,6 +32,8 @@ export interface MachineView {
   soundOn: boolean;
   /** Read by screen readers when it changes: the last result or error. */
   announcement: string;
+  /** Changes with every announcement, so repeating the same text is still announced. */
+  announcementId: number;
 }
 
 /** Lines the tape shows. One more is kept while it feeds out of view. */

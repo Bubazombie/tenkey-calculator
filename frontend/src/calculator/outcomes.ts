@@ -54,6 +54,7 @@ function failed(
     error: true,
     message,
     announcement: `${line}. ${messages[message]}`,
+    announcementId: state.announcementId + 1,
   };
 }
 
@@ -66,23 +67,27 @@ export function applyOutcome(
   const { request } = state;
   if (request?.id !== requestId) return state;
 
+  // Nothing changes but the message, so pressing = sends the same request again.
+  const keepForRetry = (message: "noConnection" | "serverError") => ({
+    ...state,
+    request: null,
+    retry: request,
+    queue: [],
+    message,
+    announcement: messages[message],
+    announcementId: state.announcementId + 1,
+  });
+
   switch (outcome.kind) {
     case "noConnection":
-      // Nothing changes, so pressing = sends the same calculation again.
-      return {
-        ...state,
-        request: null,
-        retry: request,
-        queue: [],
-        message: "noConnection",
-        announcement: messages.noConnection,
-      };
-    case "apiError":
-      return failed(
-        state,
-        request,
-        messageForApiError(outcome.code, outcome.status),
-      );
+      return keepForRetry("noConnection");
+    case "apiError": {
+      const message = messageForApiError(outcome.code, outcome.status);
+      // A server failure may pass, so its message offers a retry.
+      return message === "serverError"
+        ? keepForRetry(message)
+        : failed(state, request, message);
+    }
     case "result": {
       if (formatForDisplay(outcome.value).kind === "tooLarge") {
         return failed(state, request, "tooLargeToDisplay");
@@ -98,6 +103,7 @@ export function applyOutcome(
         nextId,
         request: null,
         announcement: line,
+        announcementId: state.announcementId + 1,
       };
       switch (request.purpose.kind) {
         case "finish":

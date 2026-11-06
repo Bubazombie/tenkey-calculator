@@ -89,6 +89,20 @@ describe("machine", () => {
     await expect.element(status).toBeEmptyDOMElement();
   });
 
+  test("repeating the same announcement replaces the text, so it is read again", async () => {
+    const view = {
+      ...fixtures.fresh,
+      announcement: "2 + 2 = 4",
+      announcementId: 1,
+    };
+    const screen = await render(<Machine view={view} />);
+    const status = screen.getByRole("status").element();
+    const first = status.firstChild;
+    await screen.rerender(<Machine view={{ ...view, announcementId: 2 }} />);
+    expect(status.textContent).toBe("2 + 2 = 4");
+    expect(status.firstChild).not.toBe(first);
+  });
+
   test("shows the keyboard light and the sound switch state", async () => {
     const on = await render(<Machine view={fixtures.reference} />);
     await expect

@@ -74,7 +74,10 @@ export function Machine({ view, onToggleSound, handlers }: MachineProps) {
 
         <VisuallyHidden id={helpId}>{help}</VisuallyHidden>
         <VisuallyHidden role="status" aria-live="polite">
-          {view.announcement}
+          {/* A new node for every announcement, so the same text is read again. */}
+          {view.announcement && (
+            <span key={view.announcementId}>{view.announcement}</span>
+          )}
         </VisuallyHidden>
       </div>
     </div>

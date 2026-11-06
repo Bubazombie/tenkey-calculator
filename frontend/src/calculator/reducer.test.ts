@@ -311,6 +311,31 @@ describe("failures", () => {
     expect(press(state, "=").request).toBeNull();
   });
 
+  test("a server error keeps the calculation, and = sends it again", () => {
+    const failed = answer(press(initialState, "9@"), {
+      kind: "apiError",
+      code: "internal",
+      status: 500,
+    });
+    expect(view(failed).topLine).toEqual({
+      kind: "message",
+      text: messages.serverError,
+    });
+    expect(view(failed).digits).toBe("9");
+    expect(failed.tape).toEqual([]);
+    expect(request(press(failed, "="))).toEqual({
+      operation: "sqrt",
+      operands: ["9"],
+    });
+  });
+
+  test.each(["5+-=", "9+-@", "9+-%"])(
+    "%s does nothing while only a minus sign is typed",
+    (keys) => {
+      expect(press(initialState, keys).request).toBeNull();
+    },
+  );
+
   test("a slow request shows Calculating...", () => {
     let state = press(initialState, "12*3=");
     const id = state.request?.id ?? 0;
