@@ -19,7 +19,7 @@ Then open http://localhost:8080. One container runs the Go server, which answers
 
 ### Prerequisites
 
-- Go 1.27
+- Go 1.26 or newer
 - Node 24
 - golangci-lint 2 for linting (`winget install GolangCI.golangci-lint` on Windows, see [install options](https://golangci-lint.run/docs/welcome/install/local/))
 
@@ -348,20 +348,20 @@ Each entry gives the decision, why, and the main alternative not picked.
 
 The brief suggests 2 to 4 hours and asks to prioritize correctness, clarity and maintainability. I chose to go further on the UI, accessibility and tests; everything else stays lean.
 
-About 2 hours 45 minutes of building, by the session clock (13:45 to 16:30), on top of the design rounds done beforehand:
+About 4 hours 40 minutes in total: about 1 hour 40 minutes of planning and designing the UI before the first commit, and about 3 hours of building:
 
-| Part | Time |
+| Part of the building | Time |
 |---|---|
-| Plan, repository, rules and tooling | 35 min |
-| Backend: exact arithmetic and the API | 30 min |
+| Plan, repository, rules and tooling | 40 min |
+| Backend: exact arithmetic and the API | 35 min |
 | Frontend setup, fonts, static machine and design comparison | 45 min |
-| Calculator logic, input, sound and API connection | 25 min |
+| Calculator logic, input, sound and API connection | 30 min |
 | Serving, Docker, coverage, end-to-end tests, CI, arithmetic oracle and performance | 30 min |
 
 ## How I used AI
 
 - **Design:** I worked out the UI beforehand in a separate Claude chat, over several rounds of mock-ups, until I approved the version in `design/`. I used that chat to review my prompts and the code as well.
-- **Building:** I built the project with Claude Code in one conversation, exported in full to `docs/ai-conversation.md`. I set the working rules (`CLAUDE.md`), made the product and design decisions, and reviewed every step; Claude Code researched the options, wrote the code and tests, and ran the checks.
+- **Building:** I built the project with Claude Code in one conversation, exported to `docs/ai-conversation.md`. I set the working rules (`CLAUDE.md`), made the product and design decisions, and reviewed every step; Claude Code researched the options, wrote the code and tests, and ran the checks.
 - **Guardrails:** every check had to be seen failing before it was trusted, every decision went into this README with its alternative, and a commit hook keeps AI attribution out of the history.
 
 ## Git hooks
