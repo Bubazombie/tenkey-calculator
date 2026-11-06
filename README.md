@@ -216,6 +216,11 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Keys pressed while a request is pending are queued and applied in order; an error or AC empties the queue | Fast typists and slow connections lose no input | Ignoring keys while waiting |
 | AC cancels a pending request; a request with no answer after 10 seconds counts as no connection | The person is never stuck waiting | No timeout |
 | The display rounds decimals half away from zero to fill 10 digit cells, and shows "Too large to display" when the whole part does not fit. A tiny result such as `1 ÷ 9999999999` shows `0` | Leftovers of inexact results disappear (`(1 ÷ 3 × 3) − 1` shows `0`). Trade-off: a real but tiny result also shows `0`; the full value is kept for chaining | Scientific notation, which the design has no room for |
+| The calculator logic is a pure reducer: a key that needs the API sets a request, and the answer is applied as a separate action | Every rule is tested in Node without React, timers or a server | Calling the API from inside the key handlers |
+| Keys pressed during a request are stored in the reducer's state and replayed in order when the answer arrives, stopping at the next key that needs the API | The queue is part of the tested logic, not of the network code | A queue in the hook |
+| `a ^ b %` turns b into b / 100, like `×` and `÷`; `5 + =` with nothing typed after the operator does nothing | Only `+` and `−` have a "percent of" reading; repeating the left operand is not a rule we agreed on | Treating power like `+` |
+| Each tape line has a stable id; the tape keeps one line more than it shows, hidden from assistive technology, while it feeds out | The newest line can be told apart for the feed animation and React keys stay correct after old lines drop | Index keys |
+| The live region announces each tape line in words, or the message after a failure | Screen reader users hear what sighted users see printed, once per calculation | Announcing every key |
 | The tape keeps only the lines it shows (plus the line leaving during the feed animation), for sighted and screen-reader users alike | The brief asks for no history; a scrollable tape adds a focus stop and scroll logic | A scrollable history |
 
 ### UI and accessibility

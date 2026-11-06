@@ -12,3 +12,15 @@ export const messages = {
 } as const;
 
 export type MessageId = keyof typeof messages;
+
+const messagesByCode: Readonly<Record<string, MessageId>> = {
+  division_by_zero: "divisionByZero",
+  domain_error: "noRealResult",
+  overflow: "tooLargeToCalculate",
+  internal: "serverError",
+};
+
+/** The message for an API error code. Other request errors mean a frontend bug. */
+export function messageForApiError(code: string, status: number): MessageId {
+  return messagesByCode[code] ?? (status >= 500 ? "serverError" : "rejected");
+}

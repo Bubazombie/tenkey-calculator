@@ -1,15 +1,11 @@
 // How a calculation is written on the tape and on the display's top line.
 
+/** Operations with two operands, entered as "a op b". */
+export type BinaryOperation =
+  "add" | "subtract" | "multiply" | "divide" | "power";
+
 /** Operation names, exactly as the API expects them. */
-export type Operation =
-  | "add"
-  | "subtract"
-  | "multiply"
-  | "divide"
-  | "power"
-  | "sqrt"
-  | "percent"
-  | "percent_of";
+export type Operation = BinaryOperation | "sqrt" | "percent" | "percent_of";
 
 export type ExpressionPart =
   | { kind: "number"; text: string }
@@ -30,7 +26,7 @@ const binarySymbols = {
   multiply: { kind: "symbol", text: "×" },
   divide: { kind: "symbol", text: "÷" },
   power: { kind: "symbol", text: "^", spoken: "to the power of" },
-} as const satisfies Record<string, ExpressionPart>;
+} as const satisfies Record<BinaryOperation, ExpressionPart>;
 
 const percentSign: ExpressionPart = { kind: "symbol", text: "%" };
 

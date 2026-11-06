@@ -44,6 +44,8 @@ test("a new key appears in the help text without other changes", () => {
     group: "pad",
     area: { column: 1, row: 1 },
     shortcuts: ["M"],
+    action: { type: "operator", operation: "multiply" },
+    sound: "regular",
   };
   expect(shortcutHelp([extra])).toContain("Modulo: M.");
 });

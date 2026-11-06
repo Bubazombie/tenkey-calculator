@@ -8,16 +8,17 @@ const base: MachineView = {
   pressedKeys: [],
   keyboardActive: true,
   soundOn: true,
+  announcement: "",
 };
 
 const referenceTape: TapeEntry[] = [
-  { operation: "add", operands: ["0.1", "0.2"], result: "0.3" },
-  { operation: "divide", operands: ["8", "0"], result: null },
-  { operation: "sqrt", operands: ["144"], result: "12" },
-  { operation: "power", operands: ["2", "10"], result: "1024" },
+  { id: 1, operation: "add", operands: ["0.1", "0.2"], result: "0.3" },
+  { id: 2, operation: "divide", operands: ["8", "0"], result: null },
+  { id: 3, operation: "sqrt", operands: ["144"], result: "12" },
+  { id: 4, operation: "power", operands: ["2", "10"], result: "1024" },
 ];
 
-/** Machine states for review and tests. */
+/** Machine states the real calculator can reach, for tests. */
 export const fixtures = {
   /** Exactly what design/reference.html shows. */
   reference: {
@@ -76,7 +77,7 @@ export const fixtures = {
     ...base,
     tape: [
       ...referenceTape.slice(1),
-      { operation: "divide", operands: ["8", "0"], result: null },
+      { id: 5, operation: "divide", operands: ["8", "0"], result: null },
     ],
     topLine: { kind: "message", text: messages.divisionByZero },
     digits: "Error",
@@ -85,7 +86,12 @@ export const fixtures = {
     ...base,
     tape: [
       ...referenceTape.slice(1),
-      { operation: "multiply", operands: ["100000", "100000"], result: null },
+      {
+        id: 5,
+        operation: "multiply",
+        operands: ["100000", "100000"],
+        result: null,
+      },
     ],
     topLine: { kind: "message", text: messages.tooLargeToDisplay },
     digits: "Error",
@@ -100,32 +106,31 @@ export const fixtures = {
     ...base,
     tape: [
       {
+        id: 1,
         operation: "add",
         operands: ["1234567890", "8765432109"],
         result: "9999999999",
       },
       {
+        id: 2,
         operation: "subtract",
         operands: ["-500000000", "499999999"],
         result: "-999999999",
       },
       {
+        id: 3,
         operation: "percent_of",
         operands: ["9999999999", "10"],
         result: "999999999.9",
       },
       {
+        id: 4,
         operation: "divide",
-        operands: ["9999999999", "0.0000000001"],
+        operands: ["9999999999", "0.000000001"],
         result: null,
       },
     ],
-    topLine: {
-      kind: "expression",
-      operation: "divide",
-      operands: ["9999999999", "0.0000000001"],
-      finished: true,
-    },
+    topLine: { kind: "message", text: messages.tooLargeToDisplay },
     digits: "Error",
   },
   quiet: {

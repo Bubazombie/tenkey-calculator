@@ -66,7 +66,9 @@ export function Machine({ view, onToggleSound }: MachineProps) {
         </div>
 
         <VisuallyHidden id={helpId}>{help}</VisuallyHidden>
-        <VisuallyHidden role="status" aria-live="polite" />
+        <VisuallyHidden role="status" aria-live="polite">
+          {view.announcement}
+        </VisuallyHidden>
       </div>
     </div>
   );

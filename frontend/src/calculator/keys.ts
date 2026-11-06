@@ -1,4 +1,5 @@
 // The key table: the one place that defines every key of the keypad.
+import type { BinaryOperation } from "./expression";
 
 export type KeyKind = "digit" | "operator" | "function" | "equals";
 
@@ -7,6 +8,20 @@ export type KeyLegend =
   | { type: "power" }
   | { type: "squareRoot" }
   | { type: "backspace" };
+
+/** What pressing the key does. */
+export type KeyAction =
+  | { type: "digit"; digit: string }
+  | { type: "point" }
+  | { type: "operator"; operation: BinaryOperation }
+  | { type: "squareRoot" }
+  | { type: "percent" }
+  | { type: "equals" }
+  | { type: "backspace" }
+  | { type: "clear" };
+
+/** Which recording the key plays: wide keys and Enter sound different. */
+export type KeySound = "regular" | "wide" | "enter" | "backspace";
 
 export interface GridArea {
   column: number;
@@ -26,19 +41,24 @@ export interface KeyDefinition {
   area: GridArea;
   /** KeyboardEvent.key values that press this key. Letters match either case. */
   shortcuts: readonly string[];
+  action: KeyAction;
+  sound: KeySound;
 }
 
 const text = (value: string): KeyLegend => ({ type: "text", text: value });
 
-const digit = (value: string, column: number, row: number): KeyDefinition => ({
-  id: `digit${value}`,
-  legend: text(value),
-  kind: "digit",
-  name: value,
-  group: "pad",
-  area: { column, row },
-  shortcuts: [value],
-});
+const digit = <D extends string>(value: D, column: number, row: number) =>
+  ({
+    id: `digit${value}`,
+    legend: text(value),
+    kind: "digit",
+    name: value,
+    group: "pad",
+    area: { column, row },
+    shortcuts: [value],
+    action: { type: "digit", digit: value },
+    sound: "regular",
+  }) as const satisfies KeyDefinition;
 
 /** In DOM order, which is also the Tab order. */
 export const keys = [
@@ -50,6 +70,8 @@ export const keys = [
     group: "function",
     area: { column: 1, row: 1 },
     shortcuts: ["@", "R"],
+    action: { type: "squareRoot" },
+    sound: "regular",
   },
   {
     id: "power",
@@ -60,6 +82,8 @@ export const keys = [
     group: "function",
     area: { column: 2, row: 1 },
     shortcuts: ["^", "Y"],
+    action: { type: "operator", operation: "power" },
+    sound: "regular",
   },
   {
     id: "percent",
@@ -69,6 +93,8 @@ export const keys = [
     group: "function",
     area: { column: 3, row: 1 },
     shortcuts: ["%"],
+    action: { type: "percent" },
+    sound: "regular",
   },
   {
     id: "backspace",
@@ -78,6 +104,8 @@ export const keys = [
     group: "function",
     area: { column: 4, row: 1 },
     shortcuts: ["Backspace"],
+    action: { type: "backspace" },
+    sound: "backspace",
   },
   {
     id: "clear",
@@ -87,6 +115,8 @@ export const keys = [
     group: "pad",
     area: { column: 1, row: 1 },
     shortcuts: ["Escape", "Delete"],
+    action: { type: "clear" },
+    sound: "regular",
   },
   {
     id: "divide",
@@ -96,6 +126,8 @@ export const keys = [
     group: "pad",
     area: { column: 2, row: 1 },
     shortcuts: ["/"],
+    action: { type: "operator", operation: "divide" },
+    sound: "regular",
   },
   {
     id: "multiply",
@@ -105,6 +137,8 @@ export const keys = [
     group: "pad",
     area: { column: 3, row: 1 },
     shortcuts: ["*"],
+    action: { type: "operator", operation: "multiply" },
+    sound: "regular",
   },
   {
     id: "subtract",
@@ -114,6 +148,8 @@ export const keys = [
     group: "pad",
     area: { column: 4, row: 1 },
     shortcuts: ["-"],
+    action: { type: "operator", operation: "subtract" },
+    sound: "regular",
   },
   digit("7", 1, 2),
   digit("8", 2, 2),
@@ -126,6 +162,8 @@ export const keys = [
     group: "pad",
     area: { column: 4, row: 2, rowSpan: 2 },
     shortcuts: ["+"],
+    action: { type: "operator", operation: "add" },
+    sound: "wide",
   },
   digit("4", 1, 3),
   digit("5", 2, 3),
@@ -133,7 +171,11 @@ export const keys = [
   digit("1", 1, 4),
   digit("2", 2, 4),
   digit("3", 3, 4),
-  { ...digit("0", 1, 5), area: { column: 1, row: 5, columnSpan: 2 } },
+  {
+    ...digit("0", 1, 5),
+    area: { column: 1, row: 5, columnSpan: 2 },
+    sound: "wide",
+  },
   {
     id: "decimal",
     legend: text("."),
@@ -142,6 +184,8 @@ export const keys = [
     group: "pad",
     area: { column: 3, row: 5 },
     shortcuts: [".", ","],
+    action: { type: "point" },
+    sound: "regular",
   },
   {
     id: "equals",
@@ -151,10 +195,22 @@ export const keys = [
     group: "pad",
     area: { column: 4, row: 4, rowSpan: 2 },
     shortcuts: ["Enter", "="],
+    action: { type: "equals" },
+    sound: "enter",
   },
 ] as const satisfies readonly KeyDefinition[];
 
 export type KeyId = (typeof keys)[number]["id"];
+
+const keysById = new Map<string, KeyDefinition>(
+  keys.map((key) => [key.id, key]),
+);
+
+export function keyById(id: KeyId): KeyDefinition {
+  const key = keysById.get(id);
+  if (!key) throw new Error(`Unknown key ${id}`);
+  return key;
+}
 
 /** Columns and rows of each grid. */
 export const gridSizes = {

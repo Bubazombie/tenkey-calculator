@@ -31,6 +31,32 @@
   list-style: none;
 }
 
+.lines[data-feed="0"] {
+  animation: feed-a 140ms ease-out;
+}
+
+.lines[data-feed="1"] {
+  animation: feed-b 140ms ease-out;
+}
+
+@keyframes feed-a {
+  from {
+    transform: translateY(1.45em);
+  }
+}
+
+@keyframes feed-b {
+  from {
+    transform: translateY(1.45em);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lines {
+    animation: none !important;
+  }
+}
+
 .line {
   min-height: 1.45em;
 }
