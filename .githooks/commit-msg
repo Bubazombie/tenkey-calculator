@@ -1,0 +1,20 @@
+#!/bin/sh
+# Removes AI attribution from the commit message (project rule, see CLAUDE.md).
+# Only whole attribution lines match, so mentions of the CLAUDE.md file are kept.
+# Trailing blank lines left behind by a removed footer are dropped too.
+
+message_file="$1"
+temp_file="$message_file.tmp"
+
+awk '
+{
+  line = tolower($0)
+  if (line ~ /^[ \t]*co-authored-by:.*(claude|anthropic)/) next
+  if (line ~ /^[ \t]*claude-session:/) next
+  if (line ~ /generated with \[?claude/) next
+  if (line ~ /claude\.ai\/code/) next
+  if ($0 ~ /^[ \t]*$/) { pending = pending $0 "\n"; next }
+  printf "%s%s\n", pending, $0
+  pending = ""
+}
+' "$message_file" > "$temp_file" && mv "$temp_file" "$message_file"
