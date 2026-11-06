@@ -5,10 +5,16 @@
   "engines": {
     "node": ">=24"
   },
+  "workspaces": [
+    "frontend"
+  ],
   "scripts": {
-    "check": "npm run lint:backend && npm run test:backend && npm run test:hooks",
+    "check": "npm run lint:backend && npm run test:backend && npm run typecheck:frontend && npm run lint:frontend && npm run test:frontend && npm run test:hooks",
     "lint:backend": "cd backend && golangci-lint run",
     "test:backend": "cd backend && go test ./...",
+    "typecheck:frontend": "npm run typecheck --workspace frontend",
+    "lint:frontend": "npm run lint --workspace frontend",
+    "test:frontend": "npm run test --workspace frontend",
     "test:hooks": "node --test .githooks/commit-msg.test.mjs"
   }
 }

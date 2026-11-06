@@ -26,7 +26,13 @@ go run ./cmd/server -addr :9000
 
 ### Frontend
 
-_Added with the frontend._
+From the repository root (npm workspaces install the frontend's dependencies):
+
+```
+npm install
+npx --workspace frontend playwright install chromium   # browser for component tests
+npm run dev --workspace frontend                        # http://localhost:5173
+```
 
 ## Project structure
 
@@ -35,7 +41,8 @@ backend/     Go REST API
   cmd/server/      Entry point: flags, HTTP server, graceful shutdown
   internal/calc/   Exact decimal arithmetic and the operations table
   internal/api/    HTTP handler, request decoding, problem details
-frontend/    React + TypeScript app
+frontend/    React + TypeScript app (Vite)
+  src/test/        Shared test helpers (axe-core check)
 e2e/         End-to-end tests (Playwright)
 design/      Approved design reference, kept untouched
 .githooks/   Commit message hook and its test
@@ -127,7 +134,12 @@ Numbers travel as JSON strings in both directions.
 | Everything | `npm run check` |
 | Backend lint (gofmt, goimports, vet, staticcheck, gosec and more) | `npm run lint:backend` |
 | Backend tests | `npm run test:backend` |
+| Frontend typecheck | `npm run typecheck:frontend` |
+| Frontend lint (ESLint and Prettier) | `npm run lint:frontend` |
+| Frontend tests | `npm run test:frontend` |
 | Commit hook tests | `npm run test:hooks` |
+
+Frontend tests named `*.test.ts` run in Node (pure logic); tests named `*.browser.test.tsx` render components in a real Chromium through Vitest browser mode, and include axe-core checks against WCAG 2.2 A and AA.
 
 The backend has table-driven tests for the arithmetic and the number rules, and fuzz tests for parsing and every operation. The fuzz seeds run with every `go test`; a longer fuzzing run is `go test ./internal/calc -run '^$' -fuzz FuzzCalculate -fuzztime 30s` (one target at a time).
 
@@ -218,6 +230,11 @@ Each entry gives the decision, why, and the main alternative not picked.
 | CSS Modules plus one global file for tokens and fonts | The design is hand-written CSS with container query units; modules scope it per component at no runtime cost | Tailwind v4 (mostly arbitrary values here), plain global CSS |
 | Vitest 4 with a Node project for logic and a browser-mode project for components; Playwright end to end; axe-core in a real browser | Real CSS makes accessibility checks such as contrast meaningful | jsdom, where axe cannot check contrast |
 | ESLint with typescript-eslint, jsx-a11y and react-hooks, plus Prettier; gofmt, `go vet` and golangci-lint | Full type-aware and accessibility rules | Biome (faster, partial accessibility and type-aware rules) |
+| npm workspaces: one root `npm install` and one lockfile for the frontend | Reviewers run every check from the root with one install | A separate `frontend/` install and lockfile |
+| ESLint 9 (not 10) and TypeScript 6.0 (not 7), every other tool on its latest major (Vite 8, React 19.3, Vitest 5, Playwright 1.65) | `eslint-plugin-jsx-a11y` supports ESLint up to 9, and `typescript-eslint` supports TypeScript below 6.1 | The newest majors without accessibility or type-aware lint rules |
+| Strict TypeScript beyond `strict`: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, unused checks | Catches undefined array reads and loose optional props at compile time | `strict` alone |
+| Test file names choose the environment: `*.test.ts` in Node, `*.browser.test.tsx` in Chromium | The convention from the Vitest docs; logic tests stay fast | One environment for everything |
+| Known audit finding accepted: a moderate ReDoS in the `minimatch` copy inside `typescript-eslint` | Development-only lint tool matching our own glob patterns; npm's only fix is a downgrade | Downgrading the linter or forcing an untested override |
 | Coverage is delivered as a README table plus one command that regenerates both reports, with minimum thresholds | Readable without a login, never expires, and the check fails if coverage drops | CI artifacts only |
 | The comparison against `design/reference.html` is a review tool, not a CI gate | The reference loads fonts from Google and we changed a few things on purpose | A pixel-diff gate in CI |
 | Performance measured locally with Lighthouse and bundle size, numbers recorded here | Enough evidence for a project this size | A Lighthouse CI job |
