@@ -1,0 +1,11 @@
+{
+  "name": "tenkey-calculator",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test:hooks": "node --test .githooks/commit-msg.test.mjs"
+  }
+}
