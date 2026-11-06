@@ -179,10 +179,10 @@ The backend has table-driven tests for the arithmetic and the number rules, and 
 
 | Layer | Statements | Branches | Functions | Lines | Minimum |
 |---|---|---|---|---|---|
-| Go (total) | 81.4% | | | | 80% of statements |
-| Frontend | 97.25% | 92.28% | 96.72% | 98.68% | 95%, 90%, 95%, 95% |
+| Go (total) | 81.9% | | | | 80% of statements |
+| Frontend | 97.57% | 92.83% | 96.85% | 98.73% | 95%, 90%, 95%, 95% |
 
-Go by package: `api` 98.0%, `calc` 92.3%, `web` 87.3%, `cmd/server` 27.0%. The server's signal handling and graceful shutdown run in the end-to-end tests and Docker, not in unit tests.
+Go by package: `api` 98.0%, `calc` 92.3%, `web` 88.1%, `cmd/server` 28.9%. The server's signal handling and graceful shutdown run in the end-to-end tests and Docker, not in unit tests.
 
 ## Accessibility
 
