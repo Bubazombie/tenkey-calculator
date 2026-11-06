@@ -70,11 +70,15 @@ type requestError struct {
 
 // decodeRequest reads exactly one JSON object with known fields.
 func decodeRequest(w http.ResponseWriter, r *http.Request) (calculationRequest, *requestError) {
-	var req calculationRequest
+	// A pointer, so a JSON null stays nil instead of decoding to empty fields.
+	var body *calculationRequest
 	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, maxBodyBytes))
 	dec.DisallowUnknownFields()
 
-	err := dec.Decode(&req)
+	err := dec.Decode(&body)
+	if err == nil && body == nil {
+		err = errors.New("the body is null")
+	}
 	if err == nil && dec.Decode(&struct{}{}) != io.EOF {
 		err = errors.New("trailing data after the JSON object")
 	}
@@ -83,14 +87,14 @@ func decodeRequest(w http.ResponseWriter, r *http.Request) (calculationRequest, 
 	var typeErr *json.UnmarshalTypeError
 	switch {
 	case err == nil:
-		return req, nil
+		return *body, nil
 	case errors.As(err, &tooLarge):
-		return req, &requestError{http.StatusRequestEntityTooLarge, codeBodyTooLarge,
+		return calculationRequest{}, &requestError{http.StatusRequestEntityTooLarge, codeBodyTooLarge,
 			fmt.Sprintf("the body must be at most %d bytes", maxBodyBytes)}
 	case errors.As(err, &typeErr) && strings.HasPrefix(typeErr.Field, "operands"):
-		return req, &requestError{http.StatusBadRequest, string(calc.CodeInvalidOperand),
+		return calculationRequest{}, &requestError{http.StatusBadRequest, string(calc.CodeInvalidOperand),
 			`operands must be JSON strings holding plain decimals such as "-12.5", not JSON numbers`}
 	default:
-		return req, &requestError{http.StatusBadRequest, codeInvalidJSON, bodyHint}
+		return calculationRequest{}, &requestError{http.StatusBadRequest, codeInvalidJSON, bodyHint}
 	}
 }

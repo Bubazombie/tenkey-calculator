@@ -37,9 +37,14 @@ func TestNewHandlerRoutesAPIAndFrontend(t *testing.T) {
 	if rec.Code != http.StatusOK || strings.TrimSpace(rec.Body.String()) != `{"result":"0.3"}` {
 		t.Errorf("POST calculation = %d %q", rec.Code, rec.Body)
 	}
-	rec = serve(t, h, http.MethodGet, "/api/unknown", "")
-	if rec.Code != http.StatusNotFound || rec.Header().Get("Content-Type") != "application/problem+json" {
-		t.Errorf("unknown API path = %d %q, want a JSON 404", rec.Code, rec.Header().Get("Content-Type"))
+	for _, path := range []string{"/api/unknown", "/api"} {
+		rec = serve(t, h, http.MethodGet, path, "")
+		if rec.Code != http.StatusNotFound || rec.Header().Get("Content-Type") != "application/problem+json" {
+			t.Errorf("GET %s = %d %q, want a JSON 404", path, rec.Code, rec.Header().Get("Content-Type"))
+		}
+	}
+	if rec := serve(t, h, http.MethodPost, "/", ""); rec.Code != http.StatusMethodNotAllowed {
+		t.Errorf("POST / = %d, want 405", rec.Code)
 	}
 }
 

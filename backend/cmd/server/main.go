@@ -88,6 +88,7 @@ func newHandler(staticDir string, logger *slog.Logger) (http.Handler, error) {
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/api/", apiHandler)
+	mux.Handle("/api", apiHandler)
 	mux.Handle("/", site)
 	return mux, nil
 }

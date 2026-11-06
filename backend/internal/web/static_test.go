@@ -127,6 +127,22 @@ func TestStaticRefusesListingsAndPathsOutsideTheSite(t *testing.T) {
 	}
 }
 
+func TestStaticOnlyAnswersGetAndHead(t *testing.T) {
+	h := newSite(t)
+	for _, method := range []string{http.MethodPost, http.MethodPut, http.MethodDelete} {
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, httptest.NewRequest(method, "/", nil))
+		if rec.Code != http.StatusMethodNotAllowed || rec.Header().Get("Allow") != "GET, HEAD" {
+			t.Errorf("%s / = %d, Allow %q; want 405 with GET, HEAD", method, rec.Code, rec.Header().Get("Allow"))
+		}
+	}
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, httptest.NewRequest(http.MethodHead, "/", nil))
+	if rec.Code != http.StatusOK {
+		t.Errorf("HEAD / = %d, want 200", rec.Code)
+	}
+}
+
 func TestStaticRequiresAnExistingDirectory(t *testing.T) {
 	if _, err := Static(filepath.Join(t.TempDir(), "missing")); err == nil {
 		t.Error("expected an error for a missing directory")

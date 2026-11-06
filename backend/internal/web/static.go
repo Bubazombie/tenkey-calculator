@@ -41,6 +41,11 @@ func Static(dir string) (http.Handler, error) {
 	files := http.FileServerFS(noListings{site})
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
+			w.Header().Set("Allow", "GET, HEAD")
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
 		header := w.Header()
 		header.Set("X-Content-Type-Options", "nosniff")
 		header.Set("Vary", "Accept-Encoding")

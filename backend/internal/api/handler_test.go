@@ -115,6 +115,8 @@ func TestCreateCalculationFailures(t *testing.T) {
 		{"malformed JSON", "application/json", `{"operation":"add",`, 400, "invalid_json"},
 		{"empty body", "application/json", ``, 400, "invalid_json"},
 		{"array instead of object", "application/json", `["add"]`, 400, "invalid_json"},
+		{"null instead of object", "application/json", `null`, 400, "invalid_json"},
+		{"number instead of object", "application/json", `42`, 400, "invalid_json"},
 		{"unknown field", "application/json", `{"operation":"add","operands":["1","2"],"x":1}`, 400, "invalid_json"},
 		{"trailing data", "application/json", `{"operation":"add","operands":["1","2"]}{}`, 400, "invalid_json"},
 		{"missing content type", "", `{"operation":"add","operands":["1","2"]}`, 415, "unsupported_media_type"},

@@ -117,7 +117,7 @@ Invoke-RestMethod -Method Post -Uri http://localhost:8080/api/v1/calculations `
 
 ### Errors
 
-Every failure, including unknown paths and methods, returns `application/problem+json` ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)) with a stable `code`:
+Every failure under `/api`, including unknown paths and methods, returns `application/problem+json` ([RFC 9457](https://www.rfc-editor.org/rfc/rfc9457)) with a stable `code`:
 
 ```json
 {"type":"about:blank","title":"Unprocessable Entity","status":422,"code":"division_by_zero","detail":"division by zero is undefined"}
@@ -267,7 +267,10 @@ Each entry gives the decision, why, and the main alternative not picked.
 | AC clears the display and pending operation but keeps the tape | Like real paper | Clearing the tape too |
 | A minus pressed before any digit makes the number negative; pressed again it removes the sign; any other operator replaces the pending one and clears the sign | No extra key. Trade-off: a pending operator cannot be changed to minus directly | A ± key |
 | Keys pressed while a request is pending are queued and applied in order; an error or AC empties the queue | Fast typists and slow connections lose no input | Ignoring keys while waiting |
-| After no connection, = resends exactly the failed request, with the same purpose, until another key is pressed | A failed square root or percent retries as itself, not as the pending operation | Rebuilding the request from the current state |
+| After no connection or a server error (5xx), = resends exactly the failed request, with the same purpose, until another key is pressed; nothing is printed on the tape | A failed square root or percent retries as itself, not as the pending operation, and a passing server problem needs no retyping | Rebuilding the request from the current state |
+| A lone minus is only a sign: =, % and √ wait for a number after it, like `5 + =` | `5 + - =` must not quietly compute `5 + 0` | Treating the lone minus as 0 |
+| Each announcement has an id and renders as a new node in the live region | Screen readers ignore a live region whose text does not change, so a repeated result or a second "No connection" would be silent | Plain text in the live region |
+| A key's release is matched by the physical key that pressed it, and every key comes back up when focus leaves the machine or the window | Shift+5 goes down as `%` but can come up as `5`, and key-up events never arrive after focus moves | Matching the release by its character only |
 | AC cancels a pending request; a request with no answer after 10 seconds counts as no connection | The person is never stuck waiting | No timeout |
 | "Calculating..." appears only after 400 ms | Fast answers do not flash a message | Showing it on every request |
 | The API client turns every answer into an outcome: a result, an API error with its code, or no connection (a network failure, or a 502, 503 or 504 from a gateway that cannot reach the API); only an abort rejects | The calculator logic handles one closed set of cases, and a stopped backend behind the dev proxy reads as "No connection" | Throwing on HTTP errors |
@@ -324,7 +327,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | Decision | Why | Alternative not picked |
 |---|---|---|
 | CSS Modules plus one global file for tokens and fonts | The design is hand-written CSS with container query units; modules scope it per component at no runtime cost | Tailwind v4 (mostly arbitrary values here), plain global CSS |
-| Vitest 4 with a Node project for logic and a browser-mode project for components; Playwright end to end; axe-core in a real browser | Real CSS makes accessibility checks such as contrast meaningful | jsdom, where axe cannot check contrast |
+| Vitest 5 with a Node project for logic and a browser-mode project for components; Playwright end to end; axe-core in a real browser | Real CSS makes accessibility checks such as contrast meaningful | jsdom, where axe cannot check contrast |
 | ESLint with typescript-eslint, jsx-a11y and react-hooks, plus Prettier; gofmt, `go vet` and golangci-lint | Full type-aware and accessibility rules | Biome (faster, partial accessibility and type-aware rules) |
 | npm workspaces: one root `npm install` and one lockfile for the frontend | Reviewers run every check from the root with one install | A separate `frontend/` install and lockfile |
 | ESLint 9 (not 10) and TypeScript 6.0 (not 7), every other tool on its latest major (Vite 8, React 19.3, Vitest 5, Playwright 1.65) | `eslint-plugin-jsx-a11y` supports ESLint up to 9, and `typescript-eslint` supports TypeScript below 6.1 | The newest majors without accessibility or type-aware lint rules |
