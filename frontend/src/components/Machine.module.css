@@ -1,0 +1,187 @@
+/*
+ * Every measure is a fraction of the machine's width (cqw), so the whole
+ * machine scales together. The width is the smallest of the available width,
+ * 480px and a cap that fits the machine in the small viewport height (svh, so
+ * mobile toolbars never cut it off). It never goes below 254px.
+ */
+.frame {
+  flex: 0 0 auto;
+  width: min(100%, max(254px, min(480px, calc((100svh - 44px) * 0.42))));
+  container-type: inline-size;
+}
+
+.machine {
+  --line: max(2px, 0.58cqw);
+  --u: calc(18.8cqw - var(--line));
+  --shadow-offset: 3.6cqw;
+
+  position: relative;
+  isolation: isolate;
+  outline: none;
+  color: var(--color-plum);
+}
+
+.machine:focus-visible {
+  outline: 3px solid var(--color-plum);
+  outline-offset: 6px;
+  border-radius: 8px;
+}
+
+/* Paper roll, with the spindle ends on both sides. */
+.roll {
+  width: 60cqw;
+  height: 9.8cqw;
+  margin: 0 auto;
+  border-radius: 2.8cqw;
+}
+
+/* The spindles' share of the shadow. */
+.roll::after {
+  content: "";
+  position: absolute;
+  top: calc(2.6cqw + var(--line));
+  right: calc(var(--line) - 6cqw);
+  left: calc(var(--line) - 6cqw);
+  z-index: -1;
+  height: 4cqw;
+  border-radius: 1.2cqw;
+  background: var(--color-shadow-pink);
+  translate: var(--shadow-offset) var(--shadow-offset);
+}
+
+.rollFace {
+  position: relative;
+  height: 100%;
+  border: var(--line) solid var(--color-plum);
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--color-tape) 0 26%,
+    var(--color-roll-shade) 26% 30%,
+    var(--color-tape) 30% 70%,
+    var(--color-roll-shade) 70% 74%,
+    var(--color-roll-shade-deep) 74%
+  );
+}
+
+.rollFace::before,
+.rollFace::after {
+  content: "";
+  position: absolute;
+  top: 2.6cqw;
+  width: 6cqw;
+  height: 4cqw;
+  border: var(--line) solid var(--color-plum);
+  background: var(--color-plum-key);
+}
+
+.rollFace::before {
+  right: 100%;
+  border-radius: 1.2cqw 0 0 1.2cqw;
+}
+
+.rollFace::after {
+  left: 100%;
+  border-radius: 0 1.2cqw 1.2cqw 0;
+}
+
+/* Machine body with its dot pattern. */
+.body {
+  margin-top: -1cqw;
+  border-radius: 4.2cqw 4.2cqw 2.4cqw 2.4cqw;
+}
+
+.bodyFace {
+  position: relative;
+  z-index: 1;
+  padding: 0 5cqw 4.6cqw;
+  border: var(--line) solid var(--color-plum);
+  border-radius: inherit;
+  background-color: var(--color-body-pink);
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-magenta) 55%, transparent) 1.1px,
+    transparent 1.4px
+  );
+  background-size: 7px 7px;
+  box-shadow:
+    inset 0.9cqw 0.9cqw 0
+      color-mix(in srgb, var(--color-white) 90%, transparent),
+    inset -0.9cqw -0.9cqw 0
+      color-mix(in srgb, var(--color-magenta-deep) 22%, transparent);
+}
+
+/* Printer housing with the paper slot and tear bar. */
+.housing {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 10.6cqw;
+  margin: 0 -5cqw;
+  border-bottom: var(--line) solid var(--color-plum);
+  border-radius: 3.6cqw 3.6cqw 0 0;
+  background: var(--color-pink);
+  box-shadow:
+    inset 0.9cqw 0.9cqw 0
+      color-mix(in srgb, var(--color-white) 75%, transparent),
+    inset -0.9cqw 0 0
+      color-mix(in srgb, var(--color-magenta-deep) 25%, transparent),
+    0 1.4cqw 0 var(--color-pink-deep),
+    0 1.4cqw 0 var(--line) var(--color-plum);
+}
+
+.slot {
+  position: relative;
+  width: 60cqw;
+  height: 3.4cqw;
+  margin-top: 2cqw;
+  border-radius: 1cqw;
+  background: var(--color-plum-deep);
+}
+
+.slot::after {
+  content: "";
+  position: absolute;
+  top: 3cqw;
+  right: 2cqw;
+  left: 2cqw;
+  height: 2.1cqw;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, var(--color-cream-deep) 25%, transparent 25%) 0 0 /
+      2.1cqw 2.1cqw repeat-x,
+    linear-gradient(225deg, var(--color-cream-deep) 25%, transparent 25%) 0 0 /
+      2.1cqw 2.1cqw repeat-x;
+}
+
+/* Front face and feet. */
+.front {
+  height: 6.2cqw;
+  margin-top: -2.6cqw;
+  border-radius: 0 0 3.2cqw 3.2cqw;
+}
+
+.frontFace {
+  position: relative;
+  z-index: 0;
+  height: 100%;
+  border: var(--line) solid var(--color-plum);
+  border-radius: inherit;
+  background: linear-gradient(
+    var(--color-magenta-deep) 0 1.1cqw,
+    var(--color-plum-key) 1.1cqw
+  );
+}
+
+.feet {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -1px;
+  padding: 0 10cqw;
+}
+
+.foot {
+  width: 13cqw;
+  height: 2cqw;
+  border-radius: 0 0 1.4cqw 1.4cqw;
+  background: var(--color-plum-deep);
+}

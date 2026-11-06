@@ -55,7 +55,8 @@ export const keys = [
     id: "power",
     legend: { type: "power" },
     kind: "function",
-    name: "Power",
+    // The legend reads "xy", so the name starts with it (WCAG 2.5.3).
+    name: "xy, power",
     group: "function",
     area: { column: 2, row: 1 },
     shortcuts: ["^", "Y"],

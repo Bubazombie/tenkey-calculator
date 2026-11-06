@@ -1,0 +1,7 @@
+/* The right padding is wider to leave room for the machine's offset shadow. */
+.page {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 22px 30px 22px 16px;
+}

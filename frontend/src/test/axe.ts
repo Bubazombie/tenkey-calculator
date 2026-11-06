@@ -8,9 +8,11 @@ export async function expectNoAxeViolations(element: Element): Promise<void> {
   const results = await axe.run(element, {
     runOnly: { type: "tag", values: wcagTags },
   });
-  const violations = results.violations.map(
-    (violation) =>
-      `${violation.id}: ${violation.help} (${String(violation.nodes.length)} elements)`,
-  );
+  const violations = results.violations.map((violation) => {
+    const targets = violation.nodes
+      .map((node) => node.target.join(" "))
+      .join(", ");
+    return `${violation.id}: ${violation.help} (${targets})`;
+  });
   expect(violations).toEqual([]);
 }

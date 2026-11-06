@@ -1,0 +1,22 @@
+/*
+ * A piece of the machine that casts the hard offset shadow.
+ *
+ * The shadow is drawn once, as a static shape, behind every piece of the
+ * machine (z-index -1 in the machine's stacking context), so it looks like the
+ * design's drop-shadow filter without repainting when a key moves. For that,
+ * the piece itself must not create a stacking context: its painted face is a
+ * child that carries any z-index.
+ */
+.castsShadow {
+  position: relative;
+}
+
+.castsShadow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--color-shadow-pink);
+  translate: var(--shadow-offset) var(--shadow-offset);
+}

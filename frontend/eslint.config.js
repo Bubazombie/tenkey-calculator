@@ -22,6 +22,13 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname,
       },
     },
+    rules: {
+      // The calculator is a focusable group: its single-key shortcuts must only
+      // work while it has focus (WCAG 2.1.4).
+      "jsx-a11y/no-noninteractive-tabindex": ["error", { roles: ["group"] }],
+      // Safari removes list semantics from unstyled lists unless the role is explicit.
+      "jsx-a11y/no-redundant-roles": ["error", { ol: ["list"] }],
+    },
   },
   prettier,
 ]);

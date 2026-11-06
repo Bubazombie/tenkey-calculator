@@ -1,0 +1,46 @@
+.tape {
+  width: 53.6cqw;
+  height: calc(5.8em + 2.4cqw + var(--line));
+  margin: -4.2cqw auto 0;
+  font-family: var(--font-tape);
+  font-size: max(12px, 3.6cqw);
+  line-height: 1.45;
+}
+
+.face {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 0.6cqw 3.2cqw 1.8cqw;
+  border: var(--line) solid var(--color-plum);
+  border-bottom: 0;
+  background: var(--color-tape);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: right;
+  color: var(--color-tape-ink);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.line {
+  min-height: 1.45em;
+}
+
+.line[data-kind="last"] {
+  color: var(--color-plum);
+  font-weight: 700;
+}
+
+.line[data-kind="error"] {
+  color: var(--color-magenta-deep);
+  font-weight: 700;
+}

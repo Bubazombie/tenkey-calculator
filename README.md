@@ -42,6 +42,9 @@ backend/     Go REST API
   internal/calc/   Exact decimal arithmetic and the operations table
   internal/api/    HTTP handler, request decoding, problem details
 frontend/    React + TypeScript app (Vite)
+  src/calculator/  Key table, shortcuts, line formats, messages, view model (no React)
+  src/components/  Presentational components, one CSS Module each
+  src/fixtures/    Machine states for review (?fixture=name) and tests
   src/styles/      Design tokens, self-hosted fonts, global rules
   src/assets/fonts Font files with their licenses
   src/test/        Shared test helpers (axe-core check)
@@ -216,7 +219,20 @@ Each entry gives the decision, why, and the main alternative not picked.
 
 | Decision | Why | Alternative not picked |
 |---|---|---|
-| Every accessible name starts with the visible label (for example "AC, clear all") | WCAG 2.5.3 Label in Name, for voice control users | Names that differ from the legend |
+| Every accessible name starts with the visible label (for example "AC, clear all", "xy, power"); keys whose legend is a symbol are named the way the symbol is read aloud ("Plus", "Minus", "Times", "Divided by", "Equals", "Percent", "Decimal point", "Square root", "Backspace") | WCAG 2.5.3 Label in Name, for voice control users. Understanding 2.5.3 treats symbols as non-text; reading them aloud matches what screen readers say for "12 × 3" on the tape | Function names such as "Add" and "Subtract" |
+| One key table (`src/calculator/keys.ts`) drives the keypad: legend, kind, accessible name, grid position and shortcuts | Adding a key or operation on the frontend touches one place; tests check the grid has no gaps or overlaps and no shortcut is used twice | Keys written out in JSX |
+| `aria-keyshortcuts` on every key names physical keys as ARIA 1.2 requires: `Plus` for +, and `Shift+5`, `Shift+6`, `Shift+2` for %, ^ and @ on a US layout | The spec asks for the key pressed, not the character; the numeric keypad types the others unmodified | Listing characters, which the spec calls incorrect |
+| The screen reader help text is generated from the key table | It can never drift from the real shortcuts | Hand-written help |
+| Static UI first, driven by fixtures picked with `?fixture=name` | Every state can be reviewed in the browser before any logic exists; the fixtures stay as test data | Building the logic first |
+| The square root sign is drawn as one shared inline SVG that scales with the text, on the key and on the tape, with "square root of" for screen readers | None of the three fonts has the glyph, so the reference falls back to a different system font on each platform | The font fallback |
+| Tape and top line formats: `12 × 3 = 36`, `2 ^ 10 = 1024`, `√144 = 12`, `50 % = 0.5`, `10 % of 200 = 20`, `8 ÷ 0 = ERROR`; negative numbers use the minus sign (−); `^` is read "to the power of" | Reads like a printed tape and like the keys pressed | Words such as "pow" or "sqrt" |
+| Numbers on the tape never break; long lines break at spaces | A number split across lines reads as two numbers | The reference's `overflow-wrap: anywhere` |
+| The tape is an `<ol role="list">` | Safari drops list semantics when `list-style` is none; the explicit role keeps them | A plain `<ol>` |
+| Display messages: "Calculating...", "No connection. Press = to try again.", "Can't divide by zero. Type a number or press AC.", "No real result. Type a number or press AC.", "Too large to calculate. Type a number or press AC.", "Too large to display. Type a number or press AC.", "Something went wrong on our side. Press = to try again.", "That calculation was rejected. Press AC to start over." | Each says what happened and what to do next, and fits the two reserved lines at 254px (tested) | Raw API error text |
+| The machine is a focusable `role="group"` described by the help text | Single-key shortcuts must only work while it has focus (WCAG 2.1.4) | Listening on the whole page |
+| The offset shadow is drawn by static pseudo-elements behind every piece (z-index -1 in the machine's stacking context); each piece's painted face is a child that carries the stacking order | Looks like the reference's `drop-shadow` filter without repainting it on every key press | The filter, or one hand-drawn shadow shape that would duplicate the machine's geometry |
+| A key's side is its own static element; pressing moves only the cap with `transform`, and dims its highlight with `opacity` | No layout or shadow repaint during key travel; the button's hit area never moves | Animating `box-shadow` as the reference does |
+| Bricolage Grotesque stays as two static files instead of Google's 18.7 KB variable file | Tried: the variable file is 26 KB smaller but shifted text widths, and the pixel diff against the reference went from about 1.4% to 2.2% | The variable file |
 | The tape is readable by screen readers as a list; results are announced by a separate live region | History available to everyone without repeated announcements | Hiding the tape from assistive technology |
 | Keypad and function rows are at least 44px tall on coarse pointers | Touch target size on phones | The 24px minimum only |
 | The whole machine always fits the screen; its height cap uses `svh` | Every key visible without scrolling, and mobile toolbars do not cut it off. Trade-off: keys get smaller on short phones | Letting the page scroll for bigger keys |
@@ -239,6 +255,7 @@ Each entry gives the decision, why, and the main alternative not picked.
 | ESLint with typescript-eslint, jsx-a11y and react-hooks, plus Prettier; gofmt, `go vet` and golangci-lint | Full type-aware and accessibility rules | Biome (faster, partial accessibility and type-aware rules) |
 | npm workspaces: one root `npm install` and one lockfile for the frontend | Reviewers run every check from the root with one install | A separate `frontend/` install and lockfile |
 | ESLint 9 (not 10) and TypeScript 6.0 (not 7), every other tool on its latest major (Vite 8, React 19.3, Vitest 5, Playwright 1.65) | `eslint-plugin-jsx-a11y` supports ESLint up to 9, and `typescript-eslint` supports TypeScript below 6.1 | The newest majors without accessibility or type-aware lint rules |
+| Two lint rule options: `no-noninteractive-tabindex` allows `role="group"`, and `no-redundant-roles` allows `role="list"` on `<ol>` | Each matches a decision above (the focusable machine, the Safari list fix); the reason sits next to the option | Disabling the rules |
 | Strict TypeScript beyond `strict`: `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, unused checks | Catches undefined array reads and loose optional props at compile time | `strict` alone |
 | Test file names choose the environment: `*.test.ts` in Node, `*.browser.test.ts(x)` in Chromium | The convention from the Vitest docs; logic tests stay fast | One environment for everything |
 | Known audit finding accepted: a moderate ReDoS in the `minimatch` copy inside `typescript-eslint` | Development-only lint tool matching our own glob patterns; npm's only fix is a downgrade | Downgrading the linter or forcing an untested override |

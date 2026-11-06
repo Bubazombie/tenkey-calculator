@@ -1,0 +1,13 @@
+.exponent {
+  font-size: 0.6em;
+}
+
+.backspace {
+  width: 6.4cqw;
+  height: auto;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

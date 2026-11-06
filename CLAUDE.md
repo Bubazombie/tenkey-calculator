@@ -66,6 +66,7 @@ Working rules only. Decisions and their details live in README.md.
 - Everything (run after every change): `npm run check`
 - Backend: `npm run lint:backend`, `npm run test:backend`
 - Frontend: `npm run typecheck:frontend`, `npm run lint:frontend`, `npm run test:frontend`; dev server `npm run dev --workspace frontend`
+- Fixtures: `http://localhost:5173/?fixture=<name>`, names in `frontend/src/fixtures/fixtures.ts`.
 - Frontend test names: `*.test.ts` runs in Node, `*.browser.test.ts(x)` runs in Chromium.
 - Hook tests: `npm run test:hooks`
 - Smart App Control on this machine sometimes blocks new Go test binaries: retry once at most. Fuzzing binaries are always blocked, so long fuzz runs happen on Linux. If it blocks a frontend tool, stop and tell the user; never work around it.

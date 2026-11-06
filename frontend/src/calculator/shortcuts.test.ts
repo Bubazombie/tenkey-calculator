@@ -28,7 +28,7 @@ test.each([
 test("help text describes every shortcut in the key table", () => {
   expect(shortcutHelp(keys)).toBe(
     "Keyboard shortcuts work while the calculator has focus. Digits: 0 to 9. " +
-      "Square root: at sign or R. Power: caret or Y. Percent: percent sign. " +
+      "Square root: at sign or R. xy, power: caret or Y. Percent: percent sign. " +
       "Backspace: Backspace. AC, clear all: Escape or Delete. Divided by: slash. " +
       "Times: asterisk. Minus: minus sign. Plus: plus sign. " +
       "Decimal point: period or comma. Equals: Enter or equals sign.",

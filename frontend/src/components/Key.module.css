@@ -1,0 +1,128 @@
+.key {
+  /* Travel: how far the cap moves down when pressed. */
+  --side-depth: 1.9cqw;
+  --travel: 1.4cqw;
+  --cap-gap: 2.1cqw;
+  --radius: 1.6cqw;
+
+  position: relative;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:focus-visible {
+  z-index: 1;
+  outline: 3px solid var(--color-plum);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.key[data-kind="digit"] {
+  --top: var(--color-plum-key);
+  --side: var(--color-plum-deep);
+  --ink: var(--color-digit-ink);
+}
+
+.key[data-kind="operator"] {
+  --top: var(--color-magenta);
+  --side: var(--color-magenta-deep);
+  --ink: var(--color-plum-deep);
+}
+
+.key[data-kind="function"] {
+  --top: var(--color-pink);
+  --side: var(--color-pink-deep);
+  --ink: var(--color-plum-deep);
+}
+
+.key[data-kind="equals"] {
+  --top: var(--color-cream);
+  --side: var(--color-cream-deep);
+  --ink: var(--color-plum-deep);
+}
+
+/* The key's side: the cap's shape, lower by the side depth, with an outline
+   around it. It never moves, so pressing a key only transforms the cap. */
+.side {
+  position: absolute;
+  top: calc(var(--side-depth) - var(--line));
+  right: calc(-1 * var(--line));
+  bottom: calc(var(--cap-gap) - var(--side-depth) - var(--line));
+  left: calc(-1 * var(--line));
+  border: var(--line) solid var(--color-plum);
+  border-radius: calc(var(--radius) + var(--line));
+  background: var(--side);
+}
+
+.cap {
+  position: absolute;
+  inset: 0 0 var(--cap-gap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--line) solid var(--color-plum);
+  border-radius: var(--radius);
+  background: var(--top);
+  color: var(--ink);
+  font-size: 7.2cqw;
+  font-weight: 700;
+  line-height: 1;
+  transition: transform 50ms ease-out;
+}
+
+/* Top highlight, dimmed with opacity when pressed. */
+.cap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0.7cqw 0
+    color-mix(in srgb, var(--color-white) 28%, transparent);
+  transition: opacity 50ms ease-out;
+  pointer-events: none;
+}
+
+.key[data-pressed="true"] .cap,
+.key:active .cap {
+  transform: translateY(var(--travel));
+}
+
+.key[data-pressed="true"] .cap::after,
+.key:active .cap::after {
+  opacity: 0.64;
+}
+
+/* Legend sizes from the design. */
+.key[data-group="function"] .cap {
+  font-size: 4.8cqw;
+}
+
+.key[data-kind="operator"] .cap {
+  font-size: 8.8cqw;
+}
+
+.key[data-key="clear"] .cap {
+  font-size: 6cqw;
+}
+
+.key[data-key="decimal"] .cap {
+  padding-bottom: 3.6cqw;
+  font-size: 11cqw;
+  line-height: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cap,
+  .cap::after {
+    transition: none;
+  }
+}

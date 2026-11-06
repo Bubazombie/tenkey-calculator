@@ -1,0 +1,35 @@
+.well {
+  display: flex;
+  flex-direction: column;
+  gap: 3.2cqw;
+  padding: 3.2cqw 3.2cqw 1.4cqw;
+  border: var(--line) solid var(--color-plum);
+  border-radius: 2.4cqw;
+  background: var(--color-well);
+  box-shadow: inset 0 1.2cqw 0 var(--color-pink-deep);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2.8cqw;
+}
+
+.functionRow {
+  grid-auto-rows: calc(var(--u) * 0.6);
+}
+
+.pad {
+  grid-auto-rows: calc(var(--u) * 0.94);
+}
+
+/* Touch targets of at least 44px on touch screens. */
+@media (pointer: coarse) {
+  .functionRow {
+    grid-auto-rows: max(44px, calc(var(--u) * 0.6));
+  }
+
+  .pad {
+    grid-auto-rows: max(44px, calc(var(--u) * 0.94));
+  }
+}
